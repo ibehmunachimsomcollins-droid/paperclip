@@ -113,8 +113,16 @@
   width: 7px;
   height: 7px;
   border-radius: 999px;
+  background: #9ca3af;
+  box-shadow: 0 0 0 4px color-mix(in srgb, #9ca3af 13%, transparent);
+}
+.nexus-context-live-dot.is-live {
   background: #35b981;
   box-shadow: 0 0 0 4px color-mix(in srgb, #35b981 13%, transparent);
+}
+.nexus-context-live-dot.is-error {
+  background: #dc5261;
+  box-shadow: 0 0 0 4px color-mix(in srgb, #dc5261 13%, transparent);
 }
 .nexus-context-identity {
   display: flex;
