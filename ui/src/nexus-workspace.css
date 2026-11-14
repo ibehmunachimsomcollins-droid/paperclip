@@ -1,4 +1,29 @@
 /* NEXUS workspace layer — scoped over Paperclip's existing coordinator shell. */
+
+.nexus-sidebar-brand {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 11px;
+  padding: 19px 16px 17px;
+  border-bottom: 1px solid var(--border);
+}
+.nexus-brand-mark {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 11px;
+  background: linear-gradient(145deg, #10141d 0%, #263c66 100%);
+  box-shadow: 0 5px 14px rgba(25, 50, 98, .2), inset 0 1px 0 rgba(255,255,255,.18);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: -.08em;
+}
+
 .coordinator-workspace {
   --bubble-human-bg: #15191f;
   --bubble-human-fg: #ffffff;
