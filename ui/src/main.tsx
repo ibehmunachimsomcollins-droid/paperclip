@@ -35,6 +35,7 @@ import { startPersistedQueryCache } from "./lib/persisted-query-cache";
 import { hasPendingWrites, subscribePendingWrites } from "./lib/reload-safety";
 import "@mdxeditor/editor/style.css";
 import "./index.css";
+import "./nexus-workspace.css";
 
 initPluginBridge(React, ReactDOM);
 
