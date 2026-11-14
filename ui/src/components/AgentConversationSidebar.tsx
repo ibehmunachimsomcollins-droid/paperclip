@@ -69,7 +69,11 @@ export function AgentConversationSidebar({ agents, existingChatAgentIds, availab
         <span className="mt-0.5 block text-[10px] font-medium tracking-wide text-muted-foreground">AGENT WORKSPACE</span>
       </span>
     </div>
-    <div className="flex shrink-0 items-center gap-2 px-3 pb-3 pt-2">
+    <Button type="button" onClick={() => setPickerOpen(true)}
+      className="mx-3 mb-3 h-10 w-[calc(100%-1.5rem)] justify-start gap-2 rounded-xl font-semibold shadow-sm">
+      <Plus className="size-4" />New chat
+    </Button>
+    <div className="flex shrink-0 items-center gap-2 px-3 pb-3 pt-1">
       <div className="relative min-w-0 flex-1">
         <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
         <Input ref={searchRef} aria-label="Search agents" placeholder="Search agents" value={search} onChange={event => setSearch(event.target.value)}
