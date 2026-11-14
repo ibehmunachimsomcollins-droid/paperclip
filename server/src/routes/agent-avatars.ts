@@ -1,7 +1,7 @@
 import { finished, pipeline } from "node:stream/promises";
 import { Router } from "express";
 import { z } from "zod";
-import { AGENT_PALETTE_IDS, AGENT_AVATAR_SIZES, CHARACTER_STATES, appearanceForPalette, type AgentAvatarSize } from "@paperclipai/shared";
+import { AGENT_PALETTE_IDS, AGENT_AVATAR_SIZES, AGENT_CHARACTER_SHAPES, CHARACTER_STATES, appearanceForPalette, type AgentAvatarSize } from "@paperclipai/shared";
 import { AvatarAdmissionError, createAgentAvatarService } from "../services/agent-avatars.js";
 import { createStorageProviderFromConfig } from "../storage/provider-registry.js";
 import { loadConfig } from "../config.js";
@@ -15,6 +15,10 @@ const requestSchema = z.object({
   scale: z.enum(["1", "2"]).default("1"),
   view: z.enum(["front", "portrait"]).default("front"),
   background: z.enum(["transparent", "paperclip-dark"]).default("transparent"),
+  /** Per-agent customization parameters; absent keeps the preset artwork. */
+  shape: z.enum(AGENT_CHARACTER_SHAPES).optional(),
+  ca: z.string().regex(/^[0-9a-f]{6}$/).optional(),
+  cb: z.string().regex(/^[0-9a-f]{6}$/).optional(),
 }).strict();
 
 /**
@@ -31,14 +35,25 @@ export function agentAvatarRoutes(injected?: ReturnType<typeof createAgentAvatar
   router.get("/agent-avatars/:version/:palette/:file", async (req, res) => {
     const file = String(req.params.file);
     const parsed = requestSchema.safeParse({ ...req.query, version: req.params.version, palette: req.params.palette, pose: file.endsWith(".png") ? file.slice(0, -4) : file });
-    if (!file.endsWith(".png") || !parsed.success || Object.keys(req.query).some(key => !["size", "scale", "background", "view"].includes(key))) {
+    if (!file.endsWith(".png") || !parsed.success || Object.keys(req.query).some(key => !["size", "scale", "background", "view", "shape", "ca", "cb"].includes(key))) {
       res.setHeader("Cache-Control", "no-store");
-      res.status(400).json({ error: "Unsupported avatar version, palette, pose, size, or scale" }); return;
+      res.status(400).json({ error: "Unsupported avatar version, palette, pose, size, or scale" });
+      return;
     }
-    const { palette, pose, size, scale, background, view } = parsed.data;
+    const { palette, pose, size, scale, background, view, shape, ca, cb } = parsed.data;
+    // Custom colours must arrive as a pair: one without the other is a malformed request.
+    const customColors = ca && cb ? { a: `#${ca}`, b: `#${cb}` } : undefined;
+    if ((ca || cb) && !customColors) {
+      res.setHeader("Cache-Control", "no-store");
+      res.status(400).json({ error: "Custom colours require both ca and cb" });
+      return;
+    }
     try {
       service ??= createAgentAvatarService(createStorageProviderFromConfig(loadConfig()));
-      const { stream, byteSize, etag } = await service.get({ appearance: appearanceForPalette(palette === "muted-dream" ? AGENT_PALETTE_IDS[0] : palette), muted: palette === "muted-dream", pose, size: size as AgentAvatarSize, scale: Number(scale) as 1 | 2, background, view }, req.ip || req.socket.remoteAddress || "unknown");
+      const appearance = appearanceForPalette(palette === "muted-dream" ? AGENT_PALETTE_IDS[0] : palette);
+      if (shape) appearance.shape = shape;
+      if (customColors) appearance.customColors = customColors;
+      const { stream, byteSize, etag } = await service.get({ appearance, muted: palette === "muted-dream", pose, size: size as AgentAvatarSize, scale: Number(scale) as 1 | 2, background, view }, req.ip || req.socket.remoteAddress || "unknown");
       res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
       res.setHeader("ETag", etag);
       res.setHeader("X-Content-Type-Options", "nosniff");
