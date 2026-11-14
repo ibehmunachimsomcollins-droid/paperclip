@@ -159,8 +159,8 @@ export function AgentAppearanceSettings({ agent }: { agent: Agent }) {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={reset} disabled={!dirty || save.isPending}>
-            <RotateCcw className="mr-1.5 size-4" />Reset draft
+          <Button variant="ghost" size="sm" onClick={discardChanges} disabled={!dirty || save.isPending || restoreCharacter.isPending}>
+            <RotateCcw className="mr-1.5 size-4" />Discard changes
           </Button>
           <Button size="sm" onClick={() => save.mutate()} disabled={!dirty || save.isPending || imageIsCustom || restoreCharacter.isPending}>
             <Save className="mr-1.5 size-4" />{save.isPending ? "Saving…" : "Save appearance"}
