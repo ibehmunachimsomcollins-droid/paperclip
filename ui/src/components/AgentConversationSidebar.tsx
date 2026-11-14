@@ -1,5 +1,5 @@
 import { useId, useMemo, useRef, useState, type ReactNode } from "react";
-import { Plus, Search, Users, X } from "lucide-react";
+import { Plus, Search, Unplug, Users, X } from "lucide-react";
 import { SortablePinnedList, SortablePinnedRow } from "./PinnedNavigationList";
 import { Badge } from "./ui/badge";
 import type { Agent } from "@paperclipai/shared";
@@ -119,11 +119,14 @@ export function AgentConversationSidebar({ agents, existingChatAgentIds, availab
         <span className="text-sm font-medium">Create a new agent</span>
       </button>}
     </div>
-    {onBrowse && <div className="shrink-0 px-3 py-4">
-      <Button variant="ghost" size="sm" className="w-full justify-start gap-2 px-2 text-muted-foreground" onClick={onBrowse}>
+    <div className="shrink-0 space-y-1 border-t border-border px-3 py-3">
+      {onBrowse && <Button variant="ghost" size="sm" className="w-full justify-start gap-2 px-2 text-muted-foreground" onClick={onBrowse}>
         <Users className="size-4" />Browse all agents
-      </Button>
-    </div>}
+      </Button>}
+      <Link to="/apps" className="flex h-9 items-center gap-2 rounded-md px-2 text-sm text-muted-foreground no-underline transition-colors hover:bg-accent hover:text-foreground">
+        <Unplug className="size-4" />Plugins & connectors
+      </Link>
+    </div>
     <AgentChatPicker agents={availableAgents} open={pickerOpen} onOpenChange={setPickerOpen}
       unreadMessageCounts={unreadMessageCounts}
       existingChatAgentIds={existingChatAgentIds ?? agents.map(agent => agent.id)} loading={loading} error={error} onRetry={onRetry}
