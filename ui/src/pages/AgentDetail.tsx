@@ -146,6 +146,7 @@ import { markdownFileName } from "./agent-detail/markdown-file-name";
 import { AgentReportingManager } from "./agent-detail/AgentReportingManager";
 import { AgentChip, AgentMetricTile, AgentPanel, AgentSectionHeading } from "../components/agent-detail/AgentPanels";
 import { AgentHistoryDialog } from "./agent-detail/AgentHistoryDialog";
+import { AgentAppearanceSettings } from "./agent-detail/AgentAppearanceSettings";
 import { countSince, formatWindowCount } from "./agent-detail/overview-counts";
 import { InlineEditor } from "../components/InlineEditor";
 import {
@@ -1084,6 +1085,8 @@ export function AgentDetail() {
           agentRouteId={canonicalAgentRef}
         />
       )}
+
+      {activeView === "appearance" && <AgentAppearanceSettings agent={agent} />}
 
       {activeView === "instructions" && (
         <div><PromptsTab
