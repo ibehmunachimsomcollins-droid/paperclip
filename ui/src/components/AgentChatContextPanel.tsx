@@ -57,7 +57,7 @@ export function AgentChatContextPanel({ agent }: { agent: Agent }) {
       <div className="nexus-context-identity">
         <AgentCharacter
           agent={agent}
-          size={112}
+          size={128}
           state={agent.status === "running" ? "working" : agent.status === "error" ? "confused" : undefined}
           motion="auto"
           followCursor
