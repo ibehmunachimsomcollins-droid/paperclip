@@ -14,6 +14,7 @@ describe("agent detail navigation", () => {
     expect(AGENT_DETAIL_NAVIGATION.map((section) => section.label)).toEqual(["Agent", "Audit"]);
     expect(AGENT_DETAIL_NAVIGATION.flatMap((section) => section.items.map((item) => item.value))).toEqual([
       "overview",
+      "appearance",
       "instructions",
       "runtime",
       "secrets",
@@ -28,6 +29,7 @@ describe("agent detail navigation", () => {
   });
 
   it("keeps views that left the nav reachable by URL", () => {
+    expect(parseAgentDetailView("appearance")).toBe("appearance");
     expect(parseAgentDetailView("skills")).toBe("skills");
     expect(parseAgentDetailView("tools")).toBe("tools");
     expect(parseAgentDetailView("channels")).toBe("channels");
