@@ -7,10 +7,10 @@ import {
   Gauge,
   Palette,
   ShieldCheck,
+  type LucideIcon,
 } from "lucide-react";
 import type { Agent } from "@paperclipai/shared";
 import { AgentCharacter } from "@/components/AgentCharacter";
-import { StatusBadge } from "@/components/StatusBadge";
 import { Link } from "@/lib/router";
 import { agentDetailHref } from "@/pages/agent-detail-navigation";
 import { agentRouteRef } from "@/lib/utils";
@@ -25,7 +25,7 @@ function readableDate(value: string | null | undefined) {
   }).format(date);
 }
 
-function ContextRow({ icon: Icon, label, value }: { icon: typeof Bot; label: string; value: string }) {
+function ContextRow({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
   return (
     <div className="flex min-w-0 items-start gap-3 py-3">
       <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
