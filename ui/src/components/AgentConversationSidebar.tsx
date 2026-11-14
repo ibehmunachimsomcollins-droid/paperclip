@@ -61,11 +61,18 @@ export function AgentConversationSidebar({ agents, existingChatAgentIds, availab
     searchRef.current?.focus();
   }
   return <aside aria-labelledby={headingId} className="flex h-full min-h-0 flex-col border-r border-border bg-background">
-    <h2 id={headingId} className="sr-only">Chat contacts</h2>
-    <div className="flex shrink-0 items-center gap-2 px-3 pb-3 pt-5">
+    <h2 id={headingId} className="sr-only">NEXUS agent workspace</h2>
+    <div className="nexus-sidebar-brand">
+      <span className="nexus-brand-mark" aria-hidden="true">N</span>
+      <span className="min-w-0">
+        <span className="block text-sm font-extrabold tracking-[0.22em] text-foreground">NEXUS</span>
+        <span className="mt-0.5 block text-[10px] font-medium tracking-wide text-muted-foreground">AGENT WORKSPACE</span>
+      </span>
+    </div>
+    <div className="flex shrink-0 items-center gap-2 px-3 pb-3 pt-2">
       <div className="relative min-w-0 flex-1">
         <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-        <Input ref={searchRef} aria-label="Search chats" placeholder="Search chats" value={search} onChange={event => setSearch(event.target.value)}
+        <Input ref={searchRef} aria-label="Search agents" placeholder="Search agents" value={search} onChange={event => setSearch(event.target.value)}
           onKeyDown={event => { if (event.key === "Escape") { event.stopPropagation(); setSearch(""); } }}
           className="h-9 pl-8 pr-8 text-xs md:text-xs" />
         {search && <Button variant="ghost" size="icon-xs" aria-label="Clear search" className="absolute right-1 top-1/2 -translate-y-1/2" onClick={focusSearch}><X className="size-3" /></Button>}
@@ -78,6 +85,10 @@ export function AgentConversationSidebar({ agents, existingChatAgentIds, availab
         <p className="text-xs text-muted-foreground">Some chat history couldn’t load.</p>
         <Button variant="outline" size="sm" onClick={onRetryHistory}>Retry chat history</Button>
       </div>}
+      <div className="flex items-center justify-between px-2 pt-2">
+        <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Your agents</span>
+        <span className="rounded-full bg-muted px-2 py-0.5 font-mono text-[10px] font-semibold tabular-nums text-muted-foreground">{visible.length}</span>
+      </div>
       {error ? <div role="alert" className="flex flex-col items-start gap-2 px-2 py-6"><p className="text-sm">Couldn’t load your chats.</p><Button variant="outline" size="sm" onClick={onRetry}>Try again</Button></div> : loading ? <div aria-hidden="true" className="flex flex-col gap-1">
         {[0, 1, 2, 3].map(index => <div key={index} className="flex items-center gap-3 rounded-md px-2 py-3 motion-safe:animate-pulse">
           <div className="size-8 shrink-0 rounded-lg bg-muted" />
