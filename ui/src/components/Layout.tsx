@@ -229,8 +229,7 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
   ) : sharedSecondarySidebar;
   const hasSecondarySidebar = secondarySidebar != null;
   const keepsPrimarySidebar = streamlinedUiEnabled && hasSecondarySidebar && (
-    isAgentChatRoute
-    || shellRoute.builtInContextualSurface === "agent"
+    shellRoute.builtInContextualSurface === "agent"
     || shellRoute.builtInContextualSurface === "routine"
     || isAppsRoute
     || isToolsRoute
@@ -639,6 +638,11 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
               forceExpanded={replacesPrimarySidebar}
             />
           </div>
+        ) : isAgentChatRoute ? (
+          <div className="flex h-full w-70 shrink-0 flex-col border-r border-border bg-background">
+            <div className="min-h-0 flex-1"><AgentConversationsSidebar /></div>
+            <SidebarAccountMenu deploymentMode={health?.deploymentMode} forceExpanded />
+          </div>
         ) : (
           <SidebarShell
             open={sidebarOpen}
@@ -700,7 +704,7 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
             isMobile ? "block" : "flex flex-1 min-h-0",
             !isMobile && useStreamlinedTaskDetailShell && "streamlined-task-detail-surface",
           )}>
-            {!isMobile && (keepsPrimarySidebar || isAgentChatRoute) ? (
+            {!isMobile && keepsPrimarySidebar ? (
               <SecondarySidebar className={cn(isAgentChatRoute ? "w-70" : "w-60", "shrink-0 bg-background")}>
                 {secondarySidebar}
               </SecondarySidebar>
