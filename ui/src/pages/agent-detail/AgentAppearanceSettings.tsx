@@ -126,11 +126,22 @@ export function AgentAppearanceSettings({ agent }: { agent: Agent }) {
     }));
   };
 
-  const reset = () => setDraft({
-    schemaVersion: 1,
-    characterVersion: "cap-v1",
-    paletteId: persisted.paletteId,
-    ...(persisted.customAvatarAssetId ? { customAvatarAssetId: persisted.customAvatarAssetId } : {}),
+  const discardChanges = () => setDraft(persisted);
+
+  const restoreCharacter = useMutation({
+    mutationFn: () => agentsApi.setAvatar(agent.companyId, agent.id, null),
+    onSuccess: result => {
+      const appearance = result.appearance as NexusAppearance;
+      setDraft(appearance);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(agent.id) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(agent.companyId) });
+      pushToast({ title: "Generated character restored", body: `${agent.name}'s animated identity is active again.`, tone: "success" });
+    },
+    onError: error => pushToast({
+      title: "Could not restore character",
+      body: error instanceof Error ? error.message : "Try again.",
+      tone: "error",
+    }),
   });
 
   const imageIsCustom = Boolean(draft.customAvatarAssetId);
@@ -151,7 +162,7 @@ export function AgentAppearanceSettings({ agent }: { agent: Agent }) {
           <Button variant="ghost" size="sm" onClick={reset} disabled={!dirty || save.isPending}>
             <RotateCcw className="mr-1.5 size-4" />Reset draft
           </Button>
-          <Button size="sm" onClick={() => save.mutate()} disabled={!dirty || save.isPending || imageIsCustom}>
+          <Button size="sm" onClick={() => save.mutate()} disabled={!dirty || save.isPending || imageIsCustom || restoreCharacter.isPending}>
             <Save className="mr-1.5 size-4" />{save.isPending ? "Saving…" : "Save appearance"}
           </Button>
         </div>
@@ -224,8 +235,11 @@ export function AgentAppearanceSettings({ agent }: { agent: Agent }) {
             </div>
           </AgentPanel>
           {imageIsCustom && (
-            <div role="status" className="rounded-xl border border-amber-300/70 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-400/30 dark:bg-amber-950/20 dark:text-amber-100">
-              This agent is using an uploaded avatar image. The character settings will apply once the custom image is removed from the agent's avatar settings.
+            <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300/70 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-400/30 dark:bg-amber-950/20 dark:text-amber-100">
+              <span>This agent is using an uploaded avatar. Restore its generated character to apply shape, expression and colour settings.</span>
+              <Button variant="outline" size="sm" onClick={() => restoreCharacter.mutate()} disabled={restoreCharacter.isPending}>
+                {restoreCharacter.isPending ? "Restoring…" : "Use animated character"}
+              </Button>
             </div>
           )}
         </div>
