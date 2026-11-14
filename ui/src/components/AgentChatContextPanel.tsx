@@ -43,16 +43,16 @@ function ContextRow({ icon: Icon, label, value }: { icon: LucideIcon; label: str
 export function AgentChatContextPanel({ agent }: { agent: Agent }) {
   const agentRef = agentRouteRef(agent);
   const latestActivity = agent.lastHeartbeatAt ?? agent.updatedAt ?? null;
+  const activityLabel = agent.lastHeartbeatAt ? "Last heartbeat" : "Last updated";
   const adapter = agent.adapterType.replace(/_/g, " ");
-  const statusTone = agent.status === "running" || agent.status === "active"
-    ? "is-live"
-    : agent.status === "error" ? "is-error" : "is-idle";
+  const isLive = agent.status === "running" || agent.status === "active";
+  const statusTone = isLive ? "is-live" : agent.status === "error" ? "is-error" : "is-idle";
 
   return (
     <aside className="nexus-chat-context-panel" aria-label={`${agent.name} context`}>
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Agent context</p>
-        <span className="nexus-context-live-dot" aria-hidden />
+        <span className={`nexus-context-live-dot ${statusTone}`} aria-hidden />
       </div>
       <div className="nexus-context-identity">
         <AgentCharacter
@@ -74,7 +74,7 @@ export function AgentChatContextPanel({ agent }: { agent: Agent }) {
       <section className="nexus-context-section" aria-label="Agent details">
         <h3>Overview</h3>
         <ContextRow icon={Cpu} label="Runtime" value={adapter || "Not configured"} />
-        <ContextRow icon={Activity} label="Last activity" value={readableDate(latestActivity)} />
+        <ContextRow icon={Activity} label={activityLabel} value={readableDate(latestActivity)} />
         <ContextRow icon={Gauge} label="Role" value={agent.role.replace(/_/g, " ")} />
       </section>
 
@@ -98,7 +98,7 @@ export function AgentChatContextPanel({ agent }: { agent: Agent }) {
       </section>
 
       <div className="nexus-context-footer">
-        Agent data is synchronized from your NEXUS workspace.
+        Context for the selected agent.
       </div>
     </aside>
   );
