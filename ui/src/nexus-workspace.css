@@ -1,0 +1,329 @@
+/* NEXUS workspace layer — scoped over Paperclip's existing coordinator shell. */
+.coordinator-workspace {
+  --bubble-human-bg: #15191f;
+  --bubble-human-fg: #ffffff;
+  --coordinator-card-radius: 16px;
+  --coordinator-card-inset: 24px;
+  --coordinator-card-shadow: 0 8px 30px rgba(17, 24, 39, .045);
+  --coordinator-composer-shadow: 0 10px 36px rgba(17, 24, 39, .08);
+}
+.dark .coordinator-workspace {
+  --bubble-human-bg: #f1f3f5;
+  --bubble-human-fg: #15191f;
+}
+.coordinator-workspace .app-content-row {
+  background: var(--background);
+}
+.coordinator-workspace .agent-contact-row {
+  min-height: 58px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+}
+.coordinator-workspace .agent-contact-row[aria-current="page"],
+.coordinator-workspace .agent-contact-row.bg-accent {
+  border-color: color-mix(in srgb, var(--ring) 22%, var(--border));
+  background: color-mix(in srgb, var(--ring) 7%, var(--background));
+  box-shadow: inset 2px 0 0 var(--ring);
+}
+.coordinator-workspace .agent-contact-row:hover {
+  background: var(--accent);
+}
+.coordinator-workspace .agent-contact-create {
+  border-radius: 11px;
+  border: 1px dashed var(--border);
+}
+
+.nexus-agent-chat-layout {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--background);
+}
+.nexus-agent-chat-main {
+  display: flex;
+  flex: 1 1 0;
+  width: 0;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+.nexus-agent-chat-main > * {
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+}
+.nexus-agent-chat-context {
+  display: none;
+  flex: 0 0 292px;
+  width: 292px;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  border-left: 1px solid var(--border);
+  background: var(--card);
+}
+@media (min-width: 1280px) {
+  .nexus-agent-chat-context { display: flex; }
+}
+.nexus-chat-context-panel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 22px 18px 18px;
+  color: var(--foreground);
+  background:
+    radial-gradient(ellipse at 85% 4%, color-mix(in srgb, var(--ring) 7%, transparent), transparent 42%),
+    var(--card);
+}
+.nexus-context-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #35b981;
+  box-shadow: 0 0 0 4px color-mix(in srgb, #35b981 13%, transparent);
+}
+.nexus-context-identity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 22px 12px 18px;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--background) 82%, var(--card));
+  box-shadow: 0 8px 28px rgba(17, 24, 39, .035);
+}
+.dark .nexus-context-identity {
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .18);
+}
+.nexus-context-character {
+  filter: drop-shadow(0 12px 18px rgba(18, 32, 54, .12));
+}
+.nexus-context-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 13px;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--background);
+  color: var(--muted-foreground);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+.nexus-context-status > span {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #9ca3af;
+}
+.nexus-context-status.is-live { color: #16835a; border-color: color-mix(in srgb, #35b981 28%, var(--border)); }
+.nexus-context-status.is-live > span { background: #35b981; }
+.nexus-context-status.is-error { color: #c33b48; border-color: color-mix(in srgb, #dc5261 30%, var(--border)); }
+.nexus-context-status.is-error > span { background: #dc5261; }
+.nexus-context-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-top: 2px;
+}
+.nexus-context-section > h3 {
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+.nexus-context-section .nexus-context-link + .nexus-context-link {
+  border-top: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+}
+.nexus-context-link {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 2px;
+  border-radius: 8px;
+  color: var(--foreground);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 120ms ease, background 120ms ease;
+}
+.nexus-context-link > svg:first-child { color: var(--muted-foreground); }
+.nexus-context-link:hover { color: var(--ring); }
+.nexus-context-link:hover > svg:first-child { color: var(--ring); }
+.nexus-context-link:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.nexus-context-footer {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.nexus-appearance-page [data-agent-tile] {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+  box-shadow: 0 8px 26px rgba(17, 24, 39, .035);
+}
+.dark .nexus-appearance-page [data-agent-tile] {
+  box-shadow: 0 8px 26px rgba(0, 0, 0, .14);
+}
+.nexus-appearance-page [data-agent-tile] > header {
+  padding: 18px 18px 13px;
+}
+.nexus-shape-choice,
+.nexus-expression-choice,
+.nexus-palette-choice {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--background);
+  color: var(--foreground);
+  text-align: left;
+  transition: border-color 130ms ease, background-color 130ms ease, box-shadow 130ms ease, transform 130ms ease;
+}
+.nexus-shape-choice {
+  min-height: 118px;
+  flex-direction: column;
+  justify-content: center;
+  padding: 12px 8px;
+}
+.nexus-expression-choice {
+  min-height: 54px;
+  padding: 9px 11px;
+}
+.nexus-palette-choice {
+  min-height: 60px;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 5px;
+  padding: 7px;
+}
+.nexus-shape-choice:hover,
+.nexus-expression-choice:hover,
+.nexus-palette-choice:hover {
+  border-color: color-mix(in srgb, var(--ring) 55%, var(--border));
+  background: var(--accent);
+}
+.nexus-shape-choice.is-selected,
+.nexus-expression-choice.is-selected,
+.nexus-palette-choice.is-selected {
+  border-color: var(--ring);
+  background: color-mix(in srgb, var(--ring) 7%, var(--background));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ring) 17%, transparent);
+}
+.nexus-shape-choice:focus-visible,
+.nexus-expression-choice:focus-visible,
+.nexus-palette-choice:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.nexus-shape-sample {
+  display: block;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 2px;
+  background: linear-gradient(140deg, #d9f7ff 3%, #79c9ff 47%, #5b77da 100%);
+  box-shadow: inset -7px -7px 13px rgba(33, 57, 118, .18), inset 5px 5px 9px rgba(255,255,255,.42), 0 7px 14px rgba(47, 85, 150, .17);
+}
+.nexus-shape-sample.shape-capsule { border-radius: 50% 50% 42% 42%; }
+.nexus-shape-sample.shape-cap { border-radius: 43% 43% 32% 32%; transform: scaleX(1.04); }
+.nexus-shape-sample.shape-sphere { border-radius: 50%; }
+.nexus-appearance-preview {
+  position: sticky;
+  top: 16px;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  min-width: 0;
+  padding: 17px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background:
+    radial-gradient(ellipse at 50% 22%, color-mix(in srgb, var(--ring) 9%, transparent), transparent 54%),
+    var(--card);
+  box-shadow: 0 12px 34px rgba(17, 24, 39, .055);
+}
+.dark .nexus-appearance-preview {
+  box-shadow: 0 12px 34px rgba(0, 0, 0, .2);
+}
+.nexus-appearance-stage {
+  position: relative;
+  display: grid;
+  min-height: 255px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--background) 85%, transparent), var(--background)),
+    repeating-linear-gradient(0deg, transparent 0 23px, color-mix(in srgb, var(--border) 38%, transparent) 24px),
+    repeating-linear-gradient(90deg, transparent 0 23px, color-mix(in srgb, var(--border) 38%, transparent) 24px);
+}
+.nexus-appearance-glow {
+  position: absolute;
+  inset: 12%;
+  border-radius: 50%;
+  filter: blur(28px);
+  opacity: .8;
+}
+.nexus-color-field {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted-foreground);
+  font-size: 11px;
+  font-weight: 600;
+}
+.nexus-color-field input[type="color"] {
+  width: 34px;
+  height: 34px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--background);
+  cursor: pointer;
+}
+.nexus-color-field input[type="color"]:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (max-width: 767px) {
+  .nexus-agent-chat-layout { height: auto; min-height: 0; overflow: visible; }
+  .nexus-agent-chat-main { height: auto; min-height: 60dvh; overflow: visible; }
+  .nexus-appearance-page { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+  .nexus-appearance-preview { position: static; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nexus-shape-choice,
+  .nexus-expression-choice,
+  .nexus-palette-choice,
+  .nexus-context-link { transition: none; }
+}
