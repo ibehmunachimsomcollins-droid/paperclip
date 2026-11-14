@@ -61,7 +61,7 @@ export function AgentChatContextPanel({ agent }: { agent: Agent }) {
           state={agent.status === "running" ? "working" : agent.status === "error" ? "confused" : undefined}
           motion="auto"
           followCursor
-          trackingScope="region"
+          trackingScope="page"
           className="nexus-context-character"
         />
         <h2 className="mt-3 max-w-full truncate text-lg font-semibold tracking-tight text-foreground">{agent.name}</h2>
