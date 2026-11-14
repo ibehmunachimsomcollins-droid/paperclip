@@ -11,10 +11,32 @@ export type AgentAvatarBackground = "transparent" | "paperclip-dark";
 export const PAPERCLIP_DARK_AVATAR_BACKGROUND = "#171717";
 export const CHARACTER_STATES = ["rest", "idle", "listening", "thinking", "working", "success", "confused", "sleepy", "loading"] as const;
 export type CharacterState = typeof CHARACTER_STATES[number];
+/**
+ * Body shapes a persisted appearance may select. These must stay in sync with
+ * the vendored ClipLab `Shape` ids; agent-appearance-customization.test.ts
+ * fails when this list and the ClipLab model drift apart.
+ */
+export const AGENT_CHARACTER_SHAPES = ["capsule", "cap", "sphere"] as const;
+export type AgentCharacterShape = typeof AGENT_CHARACTER_SHAPES[number];
+/** #rrggbb, case-insensitive input; URLs and cache keys normalize to lower-case. */
+const agentHexColor = z.string().regex(/^#[0-9a-f]{6}$/i, "Use a #rrggbb hex colour");
+/**
+ * Per-agent body colour overrides. They replace the palette colours in normal
+ * renders; muted (presentation-only) renders keep the palette gray so neutral
+ * contexts stay neutral.
+ */
+export const agentCustomColorsSchema = z.object({ a: agentHexColor, b: agentHexColor }).strict();
+export type AgentCustomColors = z.infer<typeof agentCustomColorsSchema>;
 export const agentAppearanceSchema = z.object({
   schemaVersion: z.literal(1),
   characterVersion: z.literal("cap-v1"),
   paletteId: z.enum(AGENT_PALETTE_IDS),
+  /** Body shape; omitted keeps the studio character's shape (cap). */
+  shape: z.enum(AGENT_CHARACTER_SHAPES).optional(),
+  /** Persisted default character state (pose) for avatar URLs and live placement; omitted keeps rest. */
+  expression: z.enum(CHARACTER_STATES).optional(),
+  /** Body colour overrides; omitted keeps the palette colours. */
+  customColors: agentCustomColorsSchema.optional(),
   /** Company-scoped normalized image, set through the avatar upload service. */
   customAvatarAssetId: z.uuid().optional(),
 }).strict();
@@ -41,9 +63,21 @@ export function resolveAgentAppearance(appearance: unknown, id = "agent"): Agent
   const parsed = agentAppearanceSchema.safeParse(appearance);
   return parsed.success ? parsed.data : legacyAgentAppearance(id);
 }
-export function agentAvatarUrl(appearance: AgentAppearance, size: AgentAvatarSize = 512, scale: 1 | 2 = 1, pose: CharacterState = "rest", muted = false, background: AgentAvatarBackground = "transparent", view: AgentAvatarView = "front"): string {
+/**
+ * Build the public render URL for an appearance. An explicit `pose` always
+ * wins; without one, a saved `expression` becomes the rendered state and
+ * `rest` remains the default. The saved shape and custom colours ride as query
+ * parameters only when they are present, so URLs for legacy appearances stay
+ * byte-identical.
+ */
+export function agentAvatarUrl(appearance: AgentAppearance, size: AgentAvatarSize = 512, scale: 1 | 2 = 1, pose?: CharacterState, muted = false, background: AgentAvatarBackground = "transparent", view: AgentAvatarView = "front"): string {
   if (appearance.customAvatarAssetId) return `/api/assets/${appearance.customAvatarAssetId}/content`;
-  return `/api/agent-avatars/${appearance.characterVersion}/${muted ? "muted-dream" : appearance.paletteId}/${pose}.png?size=${size}&scale=${scale}${background === "paperclip-dark" ? "&background=paperclip-dark" : ""}${view === "portrait" ? "&view=portrait" : ""}`;
+  const query = [`size=${size}`, `scale=${scale}`];
+  if (appearance.shape) query.push(`shape=${appearance.shape}`);
+  if (appearance.customColors) query.push(`ca=${appearance.customColors.a.slice(1).toLowerCase()}`, `cb=${appearance.customColors.b.slice(1).toLowerCase()}`);
+  if (background === "paperclip-dark") query.push("background=paperclip-dark");
+  if (view === "portrait") query.push("view=portrait");
+  return `/api/agent-avatars/${appearance.characterVersion}/${muted ? "muted-dream" : appearance.paletteId}/${pose ?? appearance.expression ?? "rest"}.png?${query.join("&")}`;
 }
 export function characterStateForAgent(status: string): CharacterState {
   if (status === "running") return "working";
