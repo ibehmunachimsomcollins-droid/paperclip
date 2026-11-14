@@ -130,6 +130,7 @@ export function AgentAppearanceSettings({ agent }: { agent: Agent }) {
     schemaVersion: 1,
     characterVersion: "cap-v1",
     paletteId: persisted.paletteId,
+    ...(persisted.customAvatarAssetId ? { customAvatarAssetId: persisted.customAvatarAssetId } : {}),
   });
 
   const imageIsCustom = Boolean(draft.customAvatarAssetId);
@@ -218,7 +219,7 @@ export function AgentAppearanceSettings({ agent }: { agent: Agent }) {
                   <span>Secondary</span>
                   <input type="color" aria-label="Secondary character colour" value={colors.b} onChange={event => updateColor("b", event.target.value)} />
                 </label>
-                {draft.customColors && <Button variant="ghost" size="xs" onClick={() => setDraft(current => ({ ...current, customColors: undefined }))}>Use palette</Button>}
+                {draft.customColors && <Button variant="ghost" size="sm" onClick={() => setDraft(current => ({ ...current, customColors: undefined }))}>Use palette</Button>}
               </div>
             </div>
           </AgentPanel>
