@@ -15,6 +15,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { AgentPanel } from "@/components/agent-detail/AgentPanels";
+import { AgentCharacter } from "@/components/AgentCharacter";
 import { Check, Palette, RotateCcw, Save, Shapes, Sparkles } from "lucide-react";
 
 type AgentShape = "capsule" | "cap" | "sphere";
@@ -66,16 +67,6 @@ function appearanceFor(agent: Agent): NexusAppearance {
   return resolveAgentAppearance(agent.appearance, agent.id) as NexusAppearance;
 }
 
-function previewUrl(appearance: NexusAppearance) {
-  if (appearance.customAvatarAssetId) return `/api/assets/${appearance.customAvatarAssetId}/content`;
-  const params = new URLSearchParams({ size: "256", scale: "2" });
-  if (appearance.shape) params.set("shape", appearance.shape);
-  if (appearance.customColors) {
-    params.set("ca", appearance.customColors.a.slice(1).toLowerCase());
-    params.set("cb", appearance.customColors.b.slice(1).toLowerCase());
-  }
-  return `/api/agent-avatars/${appearance.characterVersion}/${appearance.paletteId}/${appearance.expression ?? "rest"}.png?${params.toString()}`;
-}
 
 function prettyName(value: string) {
   return value.split("-").map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
@@ -254,7 +245,17 @@ export function AgentAppearanceSettings({ agent }: { agent: Agent }) {
           </div>
           <div className="nexus-appearance-stage">
             <div className="nexus-appearance-glow" style={{ background: `radial-gradient(circle, ${colors.a}45, transparent 68%)` }} />
-            <img src={previewUrl(draft)} alt={`${agent.name} character preview`} className="relative z-10 size-56 max-w-full object-contain drop-shadow-[0_18px_24px_rgba(20,35,55,0.14)]" />
+            <AgentCharacter
+              appearance={draft}
+              name={agent.name}
+              size={256}
+              state={expression}
+              motion="auto"
+              followCursor
+              trackingScope="region"
+              label={`${agent.name} animated character preview`}
+              className="relative z-10 drop-shadow-[0_18px_24px_rgba(20,35,55,0.14)]"
+            />
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="rounded-xl border border-border bg-background p-3">
