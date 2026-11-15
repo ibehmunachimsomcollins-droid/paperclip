@@ -44,7 +44,7 @@ export function AgentChatContextPanel({ agent }: { agent: Agent }) {
   const agentRef = agentRouteRef(agent);
   const latestActivity = agent.lastHeartbeatAt ?? agent.updatedAt ?? null;
   const activityLabel = agent.lastHeartbeatAt ? "Last heartbeat" : "Last updated";
-  const adapter = agent.adapterType.replace(/_/g, " ");
+  const adapter = (agent.adapterType ?? "").replace(/_/g, " ");
   const isLive = agent.status === "running" || agent.status === "active";
   const statusTone = isLive ? "is-live" : agent.status === "error" ? "is-error" : "is-idle";
 
@@ -67,7 +67,7 @@ export function AgentChatContextPanel({ agent }: { agent: Agent }) {
         <h2 className="mt-3 max-w-full truncate text-lg font-semibold tracking-tight text-foreground">{agent.name}</h2>
         <p className="mt-1 text-xs text-muted-foreground">{agent.title ?? agent.role}</p>
         <span className={`nexus-context-status ${statusTone}`}>
-          <span aria-hidden />{agent.status.replace(/_/g, " ")}
+          <span aria-hidden />{(agent.status ?? "").replace(/_/g, " ")}
         </span>
       </div>
 
@@ -75,7 +75,7 @@ export function AgentChatContextPanel({ agent }: { agent: Agent }) {
         <h3>Overview</h3>
         <ContextRow icon={Cpu} label="Runtime" value={adapter || "Not configured"} />
         <ContextRow icon={Activity} label={activityLabel} value={readableDate(latestActivity)} />
-        <ContextRow icon={Gauge} label="Role" value={agent.role.replace(/_/g, " ")} />
+        <ContextRow icon={Gauge} label="Role" value={(agent.role ?? "").replace(/_/g, " ")} />
       </section>
 
       <section className="nexus-context-section" aria-label="Quick access">
