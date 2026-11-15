@@ -6,7 +6,7 @@ import path from "node:path";
 import express from "express";
 import type { Server } from "node:http";
 import sharp from "sharp";
-import { appearanceForPalette } from "@paperclipai/shared";
+import { appearanceForPalette, type AgentAvatarSize } from "@paperclipai/shared";
 import { createLocalDiskStorageProvider } from "../storage/local-disk-provider.js";
 import { createAgentAvatarService, avatarCacheKey } from "../services/agent-avatars.js";
 import { createAgentAvatarPool } from "../services/agent-avatar-pool.js";
@@ -51,7 +51,7 @@ describe("on-demand agent avatar customization (NEXUS)", () => {
     // The customized URL is replayable and the cache key separates identities.
     const cached = await fetch(`${root}?size=64&scale=1&shape=sphere`, { headers: { "If-None-Match": shaped.headers.get("etag")! } });
     expect(cached.status).toBe(304);
-    const base = { appearance: appearanceForPalette("arctic-blue"), size: 64, scale: 1 as const, pose: "rest" as const, muted: false };
+    const base = { appearance: appearanceForPalette("arctic-blue"), size: 64 as AgentAvatarSize, scale: 1 as const, pose: "rest" as const, muted: false };
     expect(avatarCacheKey({ ...base, appearance: { ...base.appearance, shape: "sphere" } })).not.toBe(avatarCacheKey(base));
     expect(avatarCacheKey({ ...base, appearance: { ...base.appearance, customColors: { a: "#ff26a8", b: "#fff78a" } } })).not.toBe(avatarCacheKey(base));
   }, 30_000);
@@ -82,8 +82,10 @@ describe("on-demand agent avatar customization (NEXUS)", () => {
     const pool = createAgentAvatarPool(1); cleanups.push(() => pool.close());
     const appearance = { ...appearanceForPalette("bubblegum-sky"), shape: "sphere" as const, customColors: { a: "#ff26a8", b: "#fff78a" } };
     const png = await pool.render({ appearance, size: 64, scale: 2, pose: "rest", muted: false });
-    const { data, info } = await sharp(png).raw().toBuffer({ resolveWithObject: true });
+    const info = await sharp(png).toBuffer({ resolveWithObject: true }).then(({ info }) => info);
     expect(info).toMatchObject({ width: 128, height: 128, channels: 4, format: "png", hasAlpha: true });
-    expect(data[(0 * info.width + 0) * info.channels + 3]).toBe(0);
+    const { data, info: rawInfo } = await sharp(png).raw().toBuffer({ resolveWithObject: true });
+    expect(rawInfo).toMatchObject({ width: 128, height: 128, channels: 4 });
+    expect(data[3]).toBe(0);
   }, 20_000);
 });
