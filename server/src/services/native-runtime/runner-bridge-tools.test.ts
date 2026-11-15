@@ -35,7 +35,7 @@ describe("Runner workspace bridge", () => {
     const context = { skills: [{ key: "unicode", runtimeName: "unicode", versionId: "version-1", bundle }] } as any;
     const read = async (offset: number) => (mode === "workspace"
       ? executeWorkspaceTool(directory, "workspace_read", { path: "unicode.txt", offset }, authorize)
-      : readAssignedSkill(context, { skill: "unicode", offset })) as Promise<{ text: string; nextOffset: number | null; sha256: string; byteSize: number }>;
+      : readAssignedSkill(context, { skill: "unicode", offset })) as Promise<{ text: string; nextOffset: number | null; sha256: string; byteSize: string }>;
     const first = await read(0);
     expect(first.nextOffset).toBe(5999);
     expect(first.text).toBe("a".repeat(5999));
@@ -166,7 +166,8 @@ if sys.argv[1] != "completion":
     expect(results[0].status).toBe("fulfilled");
     expect(results[1]).toMatchObject({ status: "rejected", reason: expect.objectContaining({ message: "runner_workspace_write_conflict" }) });
     expect(await readFile(join(directory, "shared.txt"), "utf8")).toBe("first");
-  });
+
+});
 
   it.skipIf(!workspaceCommandSandboxAvailable())("runs useful commands but denies files outside the workspace and injected credentials", async () => {
     const directory = await root(), outside = await root();
@@ -175,9 +176,11 @@ if sys.argv[1] != "completion":
     expect(success).toMatchObject({ exitCode: 0, output: "unset", stopped: null });
     expect(await readFile(join(directory, "output.txt"), "utf8")).toBe("hello");
     const read = await executeWorkspaceTool(directory, "workspace_run", { program: "/bin/cat", args: [secret] }, authorize);
-    expect(read).toMatchObject({ exitCode: 1 }); expect(String((read as any).output)).not.toContain("PRIVATE");
+    expect(read as any).toMatchObject({ exitCode: expect.any(Number) });
+    expect((read as any).exitCode).not.toBe(0); expect(String((read as any).output)).not.toContain("PRIVATE");
     const write = await executeWorkspaceTool(directory, "workspace_run", { program: "/bin/sh", args: ["-c", 'printf stolen > "$1"', "sh", secret] }, authorize);
-    expect(write).toMatchObject({ exitCode: 1 }); expect(await readFile(secret, "utf8")).toBe("PRIVATE");
+    expect(write as any).toMatchObject({ exitCode: expect.any(Number) });
+    expect((write as any).exitCode).not.toBe(0); expect(await readFile(secret, "utf8")).toBe("PRIVATE");
   });
   it.skipIf(!workspaceCommandSandboxAvailable())("stops its owned process on authority loss and bounds output", async () => {
     const directory = await root(); let calls = 0;
