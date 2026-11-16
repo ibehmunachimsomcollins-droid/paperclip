@@ -15,9 +15,9 @@ import { Link } from "@/lib/router";
 import { agentDetailHref } from "@/pages/agent-detail-navigation";
 import { agentRouteRef } from "@/lib/utils";
 
-function readableDate(value: string | null | undefined) {
+function readableDate(value: string | Date | null | undefined) {
   if (!value) return "Not recorded";
-  const date = new Date(value);
+  const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return "Not recorded";
   return new Intl.DateTimeFormat(undefined, {
     month: "short", day: "numeric", year: "numeric",
