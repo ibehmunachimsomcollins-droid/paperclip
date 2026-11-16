@@ -78,3 +78,6 @@ Send `{ imageBase64: null }` to restore the generated animated character.
 Earlier CI on pre-integration heads exposed portable Runner test fixtures, stale Runner SDK source pins, two UI type errors, and existing-chat navigation/e2e regressions. The current integration branch includes fixes for the identified fixture, registry, typecheck, and sidebar-layout issues.
 
 **The combined implementation has not yet received a completed full CI run on its exact current head.** Do not treat results from older commits as proof. Required verification is a fresh full CI run covering typecheck, static checks, build, server/shared/UI tests, Runner checks, and the e2e shards on the integrated PR #1 head.
+
+## CI trigger
+This commit intentionally retriggers full PR validation against the integrated NEXUS head.
