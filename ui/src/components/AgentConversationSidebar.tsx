@@ -61,7 +61,7 @@ export function AgentConversationSidebar({ agents, existingChatAgentIds, availab
     searchRef.current?.focus();
   }
   return <aside aria-labelledby={headingId} className="flex h-full min-h-0 flex-col border-r border-border bg-background">
-    <h2 id={headingId} className="sr-only">NEXUS agent workspace</h2>
+    <h2 id={headingId} className="sr-only">Chat contacts</h2>
     <div className="nexus-sidebar-brand">
       <span className="nexus-brand-mark" aria-hidden="true">N</span>
       <span className="min-w-0">
