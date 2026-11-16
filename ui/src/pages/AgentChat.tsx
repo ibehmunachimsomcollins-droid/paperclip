@@ -11,7 +11,6 @@ import { queryKeys } from "@/lib/queryKeys";
 import { Link, useParams } from "@/lib/router";
 import { agentRouteRef } from "@/lib/utils";
 import { TaskDetailSurface } from "./IssueDetail";
-import { AgentChatContextPanel } from "@/components/AgentChatContextPanel";
 import { isUuidLike, type Issue } from "@paperclipai/shared";
 
 export function AgentChat() {
@@ -118,16 +117,9 @@ export function AgentChat() {
       <p className="text-sm text-muted-foreground">Loading conversation…</p>
     );
   return (
-    <div className="nexus-agent-chat-layout">
-      <div className="nexus-agent-chat-main">
-        <TaskDetailSurface
-          key={`${agent.id}:${userId}`}
-          conversation={{ agent, issue: chat.data ?? null, ensureIssue }}
-        />
-      </div>
-      <div className="nexus-agent-chat-context">
-        <AgentChatContextPanel agent={agent} />
-      </div>
-    </div>
+    <TaskDetailSurface
+      key={`${agent.id}:${userId}`}
+      conversation={{ agent, issue: chat.data ?? null, ensureIssue }}
+    />
   );
 }
