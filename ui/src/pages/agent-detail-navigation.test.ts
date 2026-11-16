@@ -30,6 +30,8 @@ describe("agent detail navigation", () => {
 
   it("keeps views that left the nav reachable by URL", () => {
     expect(parseAgentDetailView("appearance")).toBe("appearance");
+    expect(agentDetailViewLabel("appearance")).toBe("Appearance");
+    expect(agentDetailHref("codie", "appearance")).toBe("/agents/codie/appearance");
     expect(parseAgentDetailView("skills")).toBe("skills");
     expect(parseAgentDetailView("tools")).toBe("tools");
     expect(parseAgentDetailView("channels")).toBe("channels");
