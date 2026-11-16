@@ -7,7 +7,15 @@
  * build replaces this emitted shim with the matching compiled Runner module
  * when it vendors packages/paperclip-runner/dist.
  */
-export {
-  readLinuxProcessStartedAt,
-  type LinuxProcessStartOptions,
-} from "../../../../../packages/paperclip-runner/src/live/linux-process-start.js";
+type RunnerProcessStart = typeof import("@paperclipai/paperclip-runner").readLinuxProcessStartedAt;
+
+const sourceUrl = new URL(
+  "../../../../../packages/paperclip-runner/src/live/linux-process-start.ts",
+  import.meta.url,
+);
+const source = (await import(sourceUrl.href)) as {
+  readLinuxProcessStartedAt: RunnerProcessStart;
+};
+
+export const readLinuxProcessStartedAt = source.readLinuxProcessStartedAt;
+export type { LinuxProcessStartOptions } from "@paperclipai/paperclip-runner";
