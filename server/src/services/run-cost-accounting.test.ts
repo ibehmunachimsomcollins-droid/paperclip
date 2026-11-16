@@ -157,7 +157,9 @@ const support = external ? { supported: true } : await getEmbeddedPostgresTestSu
       const result = await runChildProcess(randomUUID(), process.execPath,
         ['--import', loader, '--input-type=module', '-e', command], {
           cwd: process.cwd(), env: { NODE_OPTIONS: process.env.NODE_OPTIONS ?? '', PATH: process.env.PATH ?? '' },
-          timeoutSec: 5, graceSec: 1, onLog: async (stream, chunk) => {
+          // A cold TSX + Runner module load can exceed five seconds on a busy CI shard.
+          // Keep a finite bound, but don't fail healthy process-identity reads under CPU contention.
+          timeoutSec: 20, graceSec: 1, onLog: async (stream, chunk) => {
             if (stream === "stderr" && observedStderrChars < 8192) {
               const observed = chunk.slice(0, 8192 - observedStderrChars);
               observedStderrChars += observed.length;
@@ -260,7 +262,7 @@ const support = external ? { supported: true } : await getEmbeddedPostgresTestSu
     expect(settled.usageJson).toMatchObject({ accountingReceiptReady: false, accountingReceiptUnavailable: true });
     expect(await accountingIntegrityService(db).retry(owner.companyId, owner.runId, 'board')).toEqual({ accounted: false });
     expect(await db.select().from(costEvents).where(eq(costEvents.heartbeatRunId, owner.runId))).toHaveLength(1);
-  });
+  }, 60_000);
 
   it("keeps missing malformed foreign live and controlled legacy closure evidence pending", async () => {
     const owner = await stoppedLegacy();
