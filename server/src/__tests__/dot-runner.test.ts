@@ -1,3 +1,19 @@
 import { applyPendingMigrations } from "@paperclipai/db";
 import { resolveExternalTestDatabaseUrl } from "./helpers/external-test-database.js";
-// RESTORE_MARKER - content too large for single message; use push from local
+import { createGrokRoutineDispatcher } from "../services/grok-bot/dispatcher.js";
+import { grokRoutineService } from "../services/grok-bot/routine.js";
+import { assertNoExternalOverlap, withExternalAdmissionGuard } from "../modules/external-agents/admission.js";
+import { accessService } from "../services/access.js";
+import { Readable } from "node:stream";
+import { createPublicMcpTransfers } from "../services/public-mcp/file-transfers.js";
+import { issueService } from "../services/issues.js";
+import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
+import { createServer } from "node:http";
+import { fileURLToPath } from "node:url";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { and, eq, inArray, sql } from "drizzle-orm";
+import express, { type Request } from "express";
+import request from "supertest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
