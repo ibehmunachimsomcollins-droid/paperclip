@@ -88,7 +88,8 @@ COPY server/src/services/copilot-connection-probe.ts server/src/services/
 
 # CI owns repository lock updates. Resolve manifest changes in the image's
 # private build tree, then install from that exact generated lock.
-RUN pnpm install --resolution-only --ignore-scripts --no-frozen-lockfile && pnpm install --frozen-lockfile
+RUN NODE_OPTIONS=--max-old-space-size=4096 pnpm install --resolution-only --ignore-scripts --no-frozen-lockfile --child-concurrency=1 --network-concurrency=4 \
+  && NODE_OPTIONS=--max-old-space-size=4096 pnpm install --frozen-lockfile --child-concurrency=1 --network-concurrency=4
 
 # Runner image (`--target runner-artifacts`).
 #
