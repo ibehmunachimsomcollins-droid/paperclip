@@ -189,7 +189,8 @@ COPY --from=runner-artifacts-context /packages/paperclip-runner/protocol ./proto
 COPY --from=runner-artifacts-context /packages/paperclip-runner/acpx-profiles.json /packages/paperclip-runner/antigravity-distributions.json ./
 # Cargo fingerprints source mtimes. Normalize them here and in the build
 # below so a fresh checkout cannot invalidate unchanged inputs.
-RUN find runner protocol -type f -exec touch -d @0 {} + \
+RUN --mount=type=bind,from=deps,source=/app/node_modules,target=/tmp/deps-node-modules \
+  find runner protocol -type f -exec touch -d @0 {} + \
   && touch -d @0 rust-toolchain.toml acpx-profiles.json antigravity-distributions.json \
   && CARGO_BUILD_JOBS=1 cargo build --release --manifest-path runner/Cargo.toml --locked -p paperclip-runner-core --bin paperclip-runnerd
 
