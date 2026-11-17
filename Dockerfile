@@ -191,7 +191,7 @@ COPY --from=runner-artifacts-context /packages/paperclip-runner/acpx-profiles.js
 # below so a fresh checkout cannot invalidate unchanged inputs.
 RUN find runner protocol -type f -exec touch -d @0 {} + \
   && touch -d @0 rust-toolchain.toml acpx-profiles.json antigravity-distributions.json \
-  && cargo build --release --manifest-path runner/Cargo.toml --locked -p paperclip-runner-core --bin paperclip-runnerd
+  && CARGO_BUILD_JOBS=1 cargo build --release --manifest-path runner/Cargo.toml --locked -p paperclip-runner-core --bin paperclip-runnerd
 
 FROM runner-artifacts-runnerd AS runner-artifacts-build
 WORKDIR /workspace
