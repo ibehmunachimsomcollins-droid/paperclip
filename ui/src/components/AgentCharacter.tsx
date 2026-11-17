@@ -23,15 +23,17 @@ export interface AgentCharacterProps extends Omit<AgentAvatarProps, "pose"> {
   /** Org leadership cards may animate together, within a bounded canvas budget. */
   animationGroup?: "hero" | "org-chart";
 }
-export function AgentCharacter({ agent, appearance, size = 256, state = "idle", muted = false, motion = "auto", trackingRegion, trackingScope = "region", followCursor = true, followRotation = true, animationGroup = "hero", className, label, name }: AgentCharacterProps) {
+export function AgentCharacter({ agent, appearance, size = 256, state, muted = false, motion = "auto", trackingRegion, trackingScope = "region", followCursor = true, followRotation = true, animationGroup = "hero", className, label, name }: AgentCharacterProps) {
   const identity = useMemo(() => resolveAgentAppearance(appearance ?? agent?.appearance, agent?.id), [appearance, agent?.appearance, agent?.id]);
+  const savedExpression = (identity as typeof identity & { expression?: CharacterState }).expression;
+  const activeState = state ?? savedExpression ?? "idle";
   const root = useRef<HTMLSpanElement>(null), host = useRef<HTMLSpanElement>(null), player = useRef<Player | null>(null);
   const slotId = useRef(Symbol("agent-character"));
   const slots = animationGroup === "org-chart" ? orgChartCharacterSlots : characterSlot;
   const owners = useSyncExternalStore(slots.subscribe, slots.getSnapshot, slots.getSnapshot);
   const ownsSlot = owners.has(slotId.current);
   const [visible, setVisible] = useState(false), [reduced, setReduced] = useState(true), [failed, setFailed] = useState(false), [ready, setReady] = useState(false);
-  const active = !identity.customAvatarAssetId && visible && !reduced && !failed && motion === "auto" && state !== "rest";
+  const active = !identity.customAvatarAssetId && visible && !reduced && !failed && motion === "auto" && activeState !== "rest";
   useEffect(() => {
     if (typeof matchMedia !== "function" || typeof IntersectionObserver !== "function") return;
     const media = matchMedia("(prefers-reduced-motion: reduce)");
@@ -52,23 +54,23 @@ export function AgentCharacter({ agent, appearance, size = 256, state = "idle", 
     void loadCharacterModules().then(([runtime, library]) => {
       if (disposed || !host.current) return;
       player.current = runtime.createCharacter(host.current, library.characterDefinition(identity, muted), {
-        animation: library.animationId(state), trackingRegion: trackingRegion?.current ?? root.current ?? undefined,
+        animation: library.animationId(activeState), trackingRegion: trackingRegion?.current ?? root.current ?? undefined,
         followCursor, followRotation, trackingScope, displaySize: size, onError: () => setFailed(true),
       });
       setReady(true);
     }).catch(() => { if (!disposed) setFailed(true); });
     return () => { disposed = true; player.current?.destroy(); player.current = null; setReady(false); };
-  }, [active, ownsSlot, trackingRegion, trackingScope, size, followCursor, followRotation]);
+  }, [active, ownsSlot, trackingRegion, trackingScope, size, followCursor, followRotation, activeState]);
   useEffect(() => {
     if (!player.current) return;
     void loadCharacterModules().then(([, library]) => {
       player.current?.setDefinition(library.characterDefinition(identity, muted));
-      player.current?.setAnimation(library.animationId(state));
+      player.current?.setAnimation(library.animationId(activeState));
     });
-  }, [identity, muted, state, ready]);
+  }, [identity, muted, activeState, ready]);
   return <span ref={root} role={label ? "img" : undefined} aria-label={label} aria-hidden={label ? undefined : true}
     className={cn("relative inline-block shrink-0", avatarSizeClasses[size], className)}>
-    <AgentAvatar agent={agent} appearance={identity} size={size < 256 ? 256 : size} name={name} pose={state} muted={muted} className={cn("size-full", ready && !identity.customAvatarAssetId && "invisible")} />
+    <AgentAvatar agent={agent} appearance={identity} size={size < 256 ? 256 : size} name={name} pose={activeState} muted={muted} className={cn("size-full", ready && !identity.customAvatarAssetId && "invisible")} />
     <span ref={host} className="absolute inset-0" />
   </span>;
 }

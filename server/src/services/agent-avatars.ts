@@ -15,7 +15,14 @@ export interface AgentAvatarRequest {
 }
 export function avatarCacheKey(request: AgentAvatarRequest) {
   const { appearance, size, scale, pose, muted, background, view } = request;
-  return `generated-agent-avatars/${appearance.characterVersion}/${muted ? "muted-dream" : appearance.paletteId}/${pose}-${size}-${scale}${background === "paperclip-dark" ? "-paperclip-dark-v1" : ""}${view === "portrait" ? "-portrait-v1" : ""}.png`;
+  // Customized shape and colours are part of the rendered pixels, so they
+  // must be part of the cache identity. They ride on the appearance itself,
+  // which keeps every consumer (worker, S3 prefix) consistent.
+  const customization = appearance.shape ? `-${appearance.shape}` : "";
+  const customColors = appearance.customColors
+    ? `-ca-${appearance.customColors.a.slice(1).toLowerCase()}-cb-${appearance.customColors.b.slice(1).toLowerCase()}`
+    : "";
+  return `generated-agent-avatars/${appearance.characterVersion}/${muted ? "muted-dream" : appearance.paletteId}/${pose}-${size}-${scale}${customization}${customColors}${background === "paperclip-dark" ? "-paperclip-dark-v1" : ""}${view === "portrait" ? "-portrait-v1" : ""}.png`;
 }
 export class AvatarAdmissionError extends Error {
   constructor(public readonly retryAfterSeconds: number) { super("Too many cold avatar requests"); }

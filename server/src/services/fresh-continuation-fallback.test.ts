@@ -16,7 +16,7 @@ import {
 } from "./fresh-continuation-fallback.js";
 import { heartbeatService } from "./heartbeat.js";
 import { buildExecutionContinuation } from "./execution-continuation.js";
-import { currentProcessSpaceHash } from "./controller-process-identity.js";
+import { currentProcessSpaceHash, currentProcessStartedAtMs } from "./controller-process-identity.js";
 import { executionControlSchedule } from "./execution-control-work.js";
 import { readFreshWorkspaceReadiness } from "./fresh-workspace-continuation.js";
 import { taskInterruptionPresentation } from "./task-interruption-presentation.js";
@@ -748,8 +748,14 @@ suite("fresh-continuation fallback", () => {
   }, 60_000);
 
   // The recorded process identity (host, PID space, start time) of this process.
-  const liveIdentity = () => ({ processPid: process.pid, processHostHash: currentProcessSpaceHash(),
-    processStartedAt: new Date(Date.now() - process.uptime() * 1_000) });
+  const liveIdentity = async () => {
+    // Use the same OS-observed start timestamp as the production process probe.
+    // Date.now() - process.uptime() can differ by >=1s and falsely look like PID reuse.
+    const processStartedAt = await currentProcessStartedAtMs();
+    expect(processStartedAt).not.toBeNull();
+    return { processPid: process.pid, processHostHash: currentProcessSpaceHash(),
+      processStartedAt: new Date(processStartedAt!) };
+  };
 
   /** Moves the recorded start of the pending wait into the past. */
   async function waitedFor(actionId: string, ms: number) {
@@ -759,7 +765,7 @@ suite("fresh-continuation fallback", () => {
 
   it("lets a previous process still running on this host settle first, for about ten minutes at most", async () => {
     const f = await unfinishedRun({ runtime: "legacy", errorCode: "process_lost" });
-    await db.update(heartbeatRuns).set(liveIdentity()).where(eq(heartbeatRuns.id, f.runId));
+    await db.update(heartbeatRuns).set(await liveIdentity()).where(eq(heartbeatRuns.id, f.runId));
     const first = await ensureFreshContinuation(db, { companyId, runId: f.runId, trigger: "recovery_refused" });
     expect(first).toMatchObject({ kind: "exact_recovery_pending", reason: "previous_process_running" });
     // Rechecks back off from one minute.

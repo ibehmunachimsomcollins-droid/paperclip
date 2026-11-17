@@ -1,5 +1,5 @@
 import { useId, useMemo, useRef, useState, type ReactNode } from "react";
-import { Plus, Search, Users, X } from "lucide-react";
+import { Plus, Search, Unplug, Users, X } from "lucide-react";
 import { SortablePinnedList, SortablePinnedRow } from "./PinnedNavigationList";
 import { Badge } from "./ui/badge";
 import type { Agent } from "@paperclipai/shared";
@@ -62,7 +62,18 @@ export function AgentConversationSidebar({ agents, existingChatAgentIds, availab
   }
   return <aside aria-labelledby={headingId} className="flex h-full min-h-0 flex-col border-r border-border bg-background">
     <h2 id={headingId} className="sr-only">Chat contacts</h2>
-    <div className="flex shrink-0 items-center gap-2 px-3 pb-3 pt-5">
+    <div className="nexus-sidebar-brand">
+      <span className="nexus-brand-mark" aria-hidden="true">N</span>
+      <span className="min-w-0">
+        <span className="block text-sm font-extrabold tracking-[0.22em] text-foreground">NEXUS</span>
+        <span className="mt-0.5 block text-[10px] font-medium tracking-wide text-muted-foreground">AGENT WORKSPACE</span>
+      </span>
+    </div>
+    <Button type="button" onClick={() => setPickerOpen(true)}
+      className="mx-3 mb-3 h-10 w-[calc(100%-1.5rem)] justify-start gap-2 rounded-xl font-semibold shadow-sm">
+      <Plus className="size-4" />New chat
+    </Button>
+    <div className="flex shrink-0 items-center gap-2 px-3 pb-3 pt-1">
       <div className="relative min-w-0 flex-1">
         <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
         <Input ref={searchRef} aria-label="Search chats" placeholder="Search chats" value={search} onChange={event => setSearch(event.target.value)}
@@ -78,6 +89,10 @@ export function AgentConversationSidebar({ agents, existingChatAgentIds, availab
         <p className="text-xs text-muted-foreground">Some chat history couldn’t load.</p>
         <Button variant="outline" size="sm" onClick={onRetryHistory}>Retry chat history</Button>
       </div>}
+      <div className="flex items-center justify-between px-2 pt-2">
+        <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Your agents</span>
+        <span className="rounded-full bg-muted px-2 py-0.5 font-mono text-[10px] font-semibold tabular-nums text-muted-foreground">{visible.length}</span>
+      </div>
       {error ? <div role="alert" className="flex flex-col items-start gap-2 px-2 py-6"><p className="text-sm">Couldn’t load your chats.</p><Button variant="outline" size="sm" onClick={onRetry}>Try again</Button></div> : loading ? <div aria-hidden="true" className="flex flex-col gap-1">
         {[0, 1, 2, 3].map(index => <div key={index} className="flex items-center gap-3 rounded-md px-2 py-3 motion-safe:animate-pulse">
           <div className="size-8 shrink-0 rounded-lg bg-muted" />
@@ -119,11 +134,14 @@ export function AgentConversationSidebar({ agents, existingChatAgentIds, availab
         <span className="text-sm font-medium">Create a new agent</span>
       </button>}
     </div>
-    {onBrowse && <div className="shrink-0 px-3 py-4">
-      <Button variant="ghost" size="sm" className="w-full justify-start gap-2 px-2 text-muted-foreground" onClick={onBrowse}>
+    <div className="shrink-0 space-y-1 border-t border-border px-3 py-3">
+      {onBrowse && <Button variant="ghost" size="sm" className="w-full justify-start gap-2 px-2 text-muted-foreground" onClick={onBrowse}>
         <Users className="size-4" />Browse all agents
-      </Button>
-    </div>}
+      </Button>}
+      <Link to="/apps" className="flex h-9 items-center gap-2 rounded-md px-2 text-sm text-muted-foreground no-underline transition-colors hover:bg-accent hover:text-foreground">
+        <Unplug className="size-4" />Plugins & connectors
+      </Link>
+    </div>
     <AgentChatPicker agents={availableAgents} open={pickerOpen} onOpenChange={setPickerOpen}
       unreadMessageCounts={unreadMessageCounts}
       existingChatAgentIds={existingChatAgentIds ?? agents.map(agent => agent.id)} loading={loading} error={error} onRetry={onRetry}

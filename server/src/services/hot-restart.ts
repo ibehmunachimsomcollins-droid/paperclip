@@ -186,7 +186,10 @@ export async function readProcessStartedAt(
   const runCommand = options.runCommand ?? runProcessCommand;
 
   if (platform === "linux") {
-    const { readLinuxProcessStartedAt } = await import("../vendor/paperclip-runner/index.js");
+    // This one OS probe must not import the Runner's entire public entrypoint.
+    // The vendor build replaces this narrow source shim with the compiled
+    // Runner module, while source-mode startup imports only this tiny helper.
+    const { readLinuxProcessStartedAt } = await import("../vendor/paperclip-runner/live/linux-process-start.js");
     return readLinuxProcessStartedAt(pid, options.linuxProcessStart);
   }
 

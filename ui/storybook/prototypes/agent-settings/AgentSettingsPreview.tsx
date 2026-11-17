@@ -46,6 +46,7 @@ import { storybookIssues } from "../../fixtures/paperclipData";
 import "./settings.css";
 
 const descriptions: Record<AgentLocalDetailView, string> = {
+  appearance: "Customize the character shape, expression, palette, and colours.",
   advanced: "Edit the agent’s configuration as YAML.",
   overview: "A snapshot of Nova’s work, capabilities, and current setup.",
   instructions: "The files that guide how your agent thinks and works.",

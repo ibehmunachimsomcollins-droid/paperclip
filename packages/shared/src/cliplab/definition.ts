@@ -8,10 +8,18 @@ import { PAPERCLIP_CHARACTER } from "./character.js";
  * animations, recoloured with the agent's palette (or the presentation-only
  * gray). Body and eye following are on for live placements; static
  * portraits override them per render.
+ *
+ * A persisted shape replaces the studio character's body silhouette, and
+ * persisted custom colours replace the palette colours, in normal renders
+ * only: a muted (presentation-only) render always keeps its neutral gray.
  */
 export function characterDefinition(appearance: AgentAppearance, muted = false): Definition {
   const colors = CAP_V1_COLORS[(muted ? "muted-dream" : appearance.paletteId) as CharacterPaletteId];
-  const character = { ...PAPERCLIP_CHARACTER.character, id: "paperclip-cap-v1", name: "Agent", color: colors.a, color2: colors.b, followCursor: true, followRotation: true };
+  const character = { ...PAPERCLIP_CHARACTER.character, id: "paperclip-cap-v1", name: "Agent",
+    color: muted ? colors.a : appearance.customColors?.a.toLowerCase() ?? colors.a,
+    color2: muted ? colors.b : appearance.customColors?.b.toLowerCase() ?? colors.b,
+    followCursor: true, followRotation: true };
+  if (appearance.shape) character.shape = appearance.shape;
   const definition = definitionOf({ version: 1, name: "Paperclip", characters: [character], expressions: PAPERCLIP_CHARACTER.expressions, animations: PAPERCLIP_CHARACTER.animations }, character);
   for (const animation of definition.animations) if (animation.id === "happy") animation.loop = false;
   return definition;
