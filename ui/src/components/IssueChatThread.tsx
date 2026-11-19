@@ -2238,7 +2238,7 @@ function IssueChatUserMessage({
       ) : (
         <div
           className={cn(
-            "mt-1 flex items-center gap-1.5 px-1 opacity-0 transition-opacity group-hover:opacity-100",
+            "mt-1 flex items-center gap-1.5 px-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity",
             isCurrentUser ? "justify-end" : "justify-start",
           )}
         >
