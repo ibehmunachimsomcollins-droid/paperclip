@@ -378,10 +378,17 @@ test("secondary chat navigation preserves layout, unique conversations, history,
     await expect(alphaLink).toHaveAttribute("aria-current", "page");
     await betaLink.click();
     await expect(betaLink).toHaveAttribute("aria-current", "page");
-    // Scope to the active visible thread viewport. Page-wide text locators can
-    // match hidden copies of thread content retained in the DOM.
+    // History is loaded asynchronously after switching agents. Wait for a
+    // known prior message first so we do not race the background comment.
+    await expect(
+      page.getByText("Beta conversation acceptance", { exact: true }),
+    ).toBeVisible({ timeout: 30_000 });
+    // Scope to the active visible thread viewport so we do not match hidden
+    // retained copies of thread content that can remain in the DOM.
     const betaThread = page.locator('[data-testid="thread-viewport"]:visible');
-    await expect(betaThread.getByText("Background activity", { exact: true })).toBeVisible();
+    await expect(
+      betaThread.getByText("Background activity", { exact: true }),
+    ).toBeVisible({ timeout: 30_000 });
     expect((await json(await request.get(betaPath))).id).toBe(beta.id);
     expect(await json(await request.get(chatListPath))).toHaveLength(1);
     await json(await request.post(`/api/agents/${f.agents[1].id}/terminate`));
@@ -389,9 +396,13 @@ test("secondary chat navigation preserves layout, unique conversations, history,
     await expect(betaLink).toContainText("Terminated");
     await betaLink.click();
     await expect(page).toHaveURL(new RegExp(`/chats/${f.agents[1].id}$`));
-    await expect(betaThread.getByText("Background activity", { exact: true })).toBeVisible();
+    await expect(
+      page.locator('[data-testid="thread-viewport"]:visible').getByText("Background activity", { exact: true }),
+    ).toBeVisible({ timeout: 30_000 });
     await page.reload();
-    await expect(betaThread.getByText("Background activity", { exact: true })).toBeVisible();
+    await expect(
+      page.locator('[data-testid="thread-viewport"]:visible').getByText("Background activity", { exact: true }),
+    ).toBeVisible({ timeout: 30_000 });
   } finally {
     await json(await request.put(workspacePath, { data: { coordinatorWorkspaceEnabled: originalWorkspace.coordinatorWorkspaceEnabled } }));
     await f.restore();
