@@ -378,14 +378,13 @@ test("secondary chat navigation preserves layout, unique conversations, history,
     await expect(alphaLink).toHaveAttribute("aria-current", "page");
     await betaLink.click();
     await expect(betaLink).toHaveAttribute("aria-current", "page");
-    // History is loaded asynchronously after switching agents. Wait for a
-    // known prior message first so we do not race the background comment.
-    await expect(
-      page.getByText("Beta conversation acceptance", { exact: true }),
-    ).toBeVisible({ timeout: 30_000 });
-    // Scope to the active visible thread viewport so we do not match hidden
-    // retained copies of thread content that can remain in the DOM.
+    // Scope to the active visible thread viewport so retained hidden threads
+    // cannot satisfy assertions. History loads asynchronously after navigation.
     const betaThread = page.locator('[data-testid="thread-viewport"]:visible');
+    await expect(betaThread).toBeVisible({ timeout: 15_000 });
+    await expect(
+      betaThread.getByText("Beta conversation acceptance", { exact: true }),
+    ).toBeVisible({ timeout: 30_000 });
     await expect(
       betaThread.getByText("Background activity", { exact: true }),
     ).toBeVisible({ timeout: 30_000 });
