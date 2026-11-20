@@ -378,7 +378,10 @@ test("secondary chat navigation preserves layout, unique conversations, history,
     await expect(alphaLink).toHaveAttribute("aria-current", "page");
     await betaLink.click();
     await expect(betaLink).toHaveAttribute("aria-current", "page");
-    await expect(page.getByText("Background activity", { exact: true })).toBeVisible();
+    // Scope to the active visible thread viewport. Page-wide text locators can
+    // match hidden copies of thread content retained in the DOM.
+    const betaThread = page.locator('[data-testid="thread-viewport"]:visible');
+    await expect(betaThread.getByText("Background activity", { exact: true })).toBeVisible();
     expect((await json(await request.get(betaPath))).id).toBe(beta.id);
     expect(await json(await request.get(chatListPath))).toHaveLength(1);
     await json(await request.post(`/api/agents/${f.agents[1].id}/terminate`));
@@ -386,9 +389,9 @@ test("secondary chat navigation preserves layout, unique conversations, history,
     await expect(betaLink).toContainText("Terminated");
     await betaLink.click();
     await expect(page).toHaveURL(new RegExp(`/chats/${f.agents[1].id}$`));
-    await expect(page.getByText("Background activity", { exact: true })).toBeVisible();
+    await expect(betaThread.getByText("Background activity", { exact: true })).toBeVisible();
     await page.reload();
-    await expect(page.getByText("Background activity", { exact: true })).toBeVisible();
+    await expect(betaThread.getByText("Background activity", { exact: true })).toBeVisible();
   } finally {
     await json(await request.put(workspacePath, { data: { coordinatorWorkspaceEnabled: originalWorkspace.coordinatorWorkspaceEnabled } }));
     await f.restore();
