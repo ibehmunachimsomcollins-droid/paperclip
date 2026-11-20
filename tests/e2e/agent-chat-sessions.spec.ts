@@ -378,15 +378,14 @@ test("secondary chat navigation preserves layout, unique conversations, history,
     await expect(alphaLink).toHaveAttribute("aria-current", "page");
     await betaLink.click();
     await expect(betaLink).toHaveAttribute("aria-current", "page");
-    // Scope to the active visible thread viewport so retained hidden threads
-    // cannot satisfy assertions. History loads asynchronously after navigation.
-    const betaThread = page.locator('[data-testid="thread-viewport"]:visible');
-    await expect(betaThread).toBeVisible({ timeout: 15_000 });
+    // Wait for the actual chat message rows, not an implementation-specific
+    // thread wrapper that can be absent while the chat surface mounts.
+    const visibleRows = page.locator('[data-testid="issue-chat-message-row"]:visible');
     await expect(
-      betaThread.getByText("Beta conversation acceptance", { exact: true }),
+      visibleRows.getByText("Beta conversation acceptance", { exact: true }),
     ).toBeVisible({ timeout: 30_000 });
     await expect(
-      betaThread.getByText("Background activity", { exact: true }),
+      visibleRows.getByText("Background activity", { exact: true }),
     ).toBeVisible({ timeout: 30_000 });
     expect((await json(await request.get(betaPath))).id).toBe(beta.id);
     expect(await json(await request.get(chatListPath))).toHaveLength(1);
@@ -396,11 +395,11 @@ test("secondary chat navigation preserves layout, unique conversations, history,
     await betaLink.click();
     await expect(page).toHaveURL(new RegExp(`/chats/${f.agents[1].id}$`));
     await expect(
-      page.locator('[data-testid="thread-viewport"]:visible').getByText("Background activity", { exact: true }),
+      page.locator('[data-testid="issue-chat-message-row"]:visible').getByText("Background activity", { exact: true }),
     ).toBeVisible({ timeout: 30_000 });
     await page.reload();
     await expect(
-      page.locator('[data-testid="thread-viewport"]:visible').getByText("Background activity", { exact: true }),
+      page.locator('[data-testid="issue-chat-message-row"]:visible').getByText("Background activity", { exact: true }),
     ).toBeVisible({ timeout: 30_000 });
   } finally {
     await json(await request.put(workspacePath, { data: { coordinatorWorkspaceEnabled: originalWorkspace.coordinatorWorkspaceEnabled } }));
