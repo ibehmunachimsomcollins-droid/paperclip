@@ -77,113 +77,44 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 
-describe("Chat landing", () => {
-  it("keeps the agent chooser visible when no recent chat is available, even with a primary agent", async () => {
+describe("NEXUS chat landing", () => {
+  it("always presents the agent chooser instead of auto-opening a primary agent", async () => {
     state.primaryAgentId = "alice";
-    recordAgentChatVisit("company-a", "user-a", "removed");
     await render();
     expect(state.navigate).not.toHaveBeenCalled();
     expect(container.textContent).toContain("What are we working on?");
-    state.navigate.mockClear();
-    recordAgentChatVisit("company-a", "user-a", "bob");
-    await render();
-    expect(state.navigate).toHaveBeenCalledWith("/chats/bob-slug", { replace: true });
+    expect(container.querySelector('[aria-label="Search agents"]')).not.toBeNull();
   });
 
-  it("does not wait for primary-agent state to render the chooser", async () => {
-    state.primaryLoading = true;
-    await render();
-    expect(state.navigate).not.toHaveBeenCalled();
-    expect(container.textContent).toContain("What are we working on?");
-    state.primaryLoading = false;
-    state.primaryAgentId = "removed";
-    await render();
-    expect(state.navigate).not.toHaveBeenCalled();
-    expect(container.textContent).toContain("What are we working on?");
-  });
-
-  it("opens the most recently visited agent and replaces the landing history entry", async () => {
-    recordAgentChatVisit("company-a", "user-a", "alice");
-    recordAgentChatVisit("company-a", "user-a", "bob");
-    await render();
-    expect(state.navigate).toHaveBeenCalledWith("/chats/bob-slug", { replace: true });
-    expect(container.textContent).toContain("Opening chat");
-  });
-
-  it("skips unavailable saved agents and preserves the company and user scope", async () => {
-    recordAgentChatVisit("company-a", "user-a", "alice");
-    recordAgentChatVisit("company-a", "user-a", "removed");
-    recordAgentChatVisit("company-b", "user-a", "other-company-agent");
-    recordAgentChatVisit("company-a", "user-b", "other-user-agent");
-    await render();
-    expect(state.navigate).toHaveBeenCalledWith("/chats/alice-slug", { replace: true });
-  });
-
-  it("reopens historical chats for agents missing from the active roster", async () => {
-    recordAgentChatVisit("company-a", "user-a", "retired-id");
-    state.chats = [{ id: "chat-retired", conversationAgentId: "retired-id" }];
-    await render();
-    expect(state.navigate).toHaveBeenCalledWith("/chats/retired-id", { replace: true });
-  });
-
-  it("waits for history before skipping a recent historical chat", async () => {
-    recordAgentChatVisit("company-a", "user-a", "alice");
-    recordAgentChatVisit("company-a", "user-a", "retired-id");
-    state.chatsFetched = false;
-    await render();
-    expect(state.navigate).not.toHaveBeenCalled();
-    state.chatsFetched = true;
-    state.chats = [{ id: "chat-retired", conversationAgentId: "retired-id" }];
-    await render();
-    expect(state.navigate).toHaveBeenCalledWith("/chats/retired-id", { replace: true });
-  });
-
-  it("shows the chooser when no saved chat remains available", async () => {
-    recordAgentChatVisit("company-a", "user-a", "removed");
-    await render();
-    expect(state.navigate).not.toHaveBeenCalled();
-    expect(container.textContent).toContain("What are we working on?");
-  });
-
-  it("skips a saved conversation that is no longer accessible even when its agent remains available", async () => {
-    recordAgentChatVisit("company-a", "user-a", "alice");
-    recordAgentChatVisit("company-a", "user-a", "bob", "deleted-chat");
-    state.chats = [{ id: "chat-alice", conversationAgentId: "alice" }];
-    await render();
-    expect(state.navigate).toHaveBeenCalledWith("/chats/alice-slug", { replace: true });
-  });
-
-  it("reopens an active agent when history fails", async () => {
-    recordAgentChatVisit("company-a", "user-a", "alice", "chat-alice");
-    state.chatsFetched = false;
-    state.chatsError = new Error("History unavailable");
-    await render();
-    expect(state.navigate).toHaveBeenCalledWith("/chats/alice-slug", { replace: true });
-  });
-
-  it("reopens a visited empty chat without waiting for history", async () => {
-    recordAgentChatVisit("company-a", "user-a", "alice", null);
-    state.chatsFetched = false;
-    await render();
-    expect(state.navigate).toHaveBeenCalledWith("/chats/alice-slug", { replace: true });
-  });
-
-  it("renders a searchable roster of agents when the chooser is available", async () => {
+  it("lists agents and provides the roster search field", async () => {
     state.agents = [agent("alice"), agent("bob"), agent("charlie")];
-    recordAgentChatVisit("company-a", "user-a", "removed");
     await render();
-    expect(container.querySelector('input[aria-label="Search agents"]')).not.toBeNull();
     expect(container.textContent).toContain("alice");
     expect(container.textContent).toContain("bob");
     expect(container.textContent).toContain("charlie");
+    expect(container.querySelector('input[placeholder="Search your agents…"]')).not.toBeNull();
   });
 
-  it("shows a retry state when identity fails instead of waiting for disabled history", async () => {
+  it("shows recent agent shortcuts without auto-navigation", async () => {
     recordAgentChatVisit("company-a", "user-a", "alice");
-    state.sessionError = new Error("Session unavailable");
-    state.chatsFetched = false;
+    recordAgentChatVisit("company-a", "user-a", "removed");
     await render();
+    expect(container.textContent).toContain("Recent");
+    expect(container.textContent).toContain("alice");
     expect(state.navigate).not.toHaveBeenCalled();
+  });
+
+  it("keeps recent agent shortcuts scoped to company and user", async () => {
+    recordAgentChatVisit("company-b", "user-a", "other-company-agent");
+    recordAgentChatVisit("company-a", "user-b", "other-user-agent");
+    await render();
+    expect(container.textContent).not.toContain("other-company-agent");
+    expect(container.textContent).not.toContain("other-user-agent");
+  });
+
+  it("shows retry state when identity loading fails", async () => {
+    state.sessionError = new Error("Session unavailable");
+    await render();
     expect(container.querySelector('[role="alert"]')?.textContent).toMatch(/Couldn[’']t load your chats/);
     expect(container.querySelector('[role="alert"]')?.textContent).toContain("Retry");
   });
