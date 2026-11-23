@@ -99,7 +99,7 @@ describe("Chat landing", () => {
     state.primaryAgentId = "removed";
     await render();
     expect(state.navigate).not.toHaveBeenCalled();
-    expect(container.textContent).toContain("Who would you like to talk to?");
+    expect(container.textContent).toContain("What are we working on?");
   });
 
   it("opens the most recently visited agent and replaces the landing history entry", async () => {
@@ -142,7 +142,7 @@ describe("Chat landing", () => {
     recordAgentChatVisit("company-a", "user-a", "removed");
     await render();
     expect(state.navigate).not.toHaveBeenCalled();
-    expect(container.textContent).toContain("Who would you like to talk to?");
+    expect(container.textContent).toContain("What are we working on?");
   });
 
   it("skips a saved conversation that is no longer accessible even when its agent remains available", async () => {
@@ -166,6 +166,16 @@ describe("Chat landing", () => {
     state.chatsFetched = false;
     await render();
     expect(state.navigate).toHaveBeenCalledWith("/chats/alice-slug", { replace: true });
+  });
+
+  it("renders a searchable roster of agents when the chooser is available", async () => {
+    state.agents = [agent("alice"), agent("bob"), agent("charlie")];
+    recordAgentChatVisit("company-a", "user-a", "removed");
+    await render();
+    expect(container.querySelector('input[aria-label="Search agents"]')).not.toBeNull();
+    expect(container.textContent).toContain("alice");
+    expect(container.textContent).toContain("bob");
+    expect(container.textContent).toContain("charlie");
   });
 
   it("shows a retry state when identity fails instead of waiting for disabled history", async () => {
