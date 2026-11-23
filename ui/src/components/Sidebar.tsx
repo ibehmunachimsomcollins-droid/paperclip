@@ -125,7 +125,7 @@ function ClassicSidebar({ children }: { children?: ReactNode }) {
   // Work. Hidden until the flag is known (no-flash, same as above).
   const { enabled: responsibilitiesHome } = useResponsibilitiesEnabled();
 
-  const chatItem = <SidebarNavItem to="/chats" label="Chat" icon={MessageCircle} badge={unreadChatCount} badgeLabel="unread chats" />;
+  const chatItem = <SidebarNavItem to="/chats" label="NEXUS" icon={MessageCircle} badge={unreadChatCount} badgeLabel="unread chats" />;
   // Combined Inbox + Task List: Inbox is a view inside Tasks, so the
   // unread/failed-run badge rides on Tasks.
   const tasksItem = combinedInboxTasks ? (
