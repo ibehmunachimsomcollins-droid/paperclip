@@ -19,7 +19,6 @@ const state = vi.hoisted(() => ({
   navigate: vi.fn(),
 }));
 
-vi.mock("@/components/primary-agent/PrimaryAgentPresentation", () => ({ usePrimaryAgentPresentation: () => ({ primaryAgentId: state.primaryAgentId, loading: state.primaryLoading }) }));
 
 vi.mock("@/context/BreadcrumbContext", () => ({ useBreadcrumbs: () => ({ setBreadcrumbs: vi.fn() }) }));
 vi.mock("@/hooks/useAgentChatNavigation", () => ({
@@ -79,22 +78,23 @@ afterEach(async () => {
 });
 
 describe("Chat landing", () => {
-  it("uses the primary only when there is no valid recent conversation", async () => {
+  it("keeps the agent chooser visible when no recent chat is available, even with a primary agent", async () => {
     state.primaryAgentId = "alice";
     recordAgentChatVisit("company-a", "user-a", "removed");
     await render();
-    expect(state.navigate).toHaveBeenCalledWith("/chats/alice-slug", { replace: true });
+    expect(state.navigate).not.toHaveBeenCalled();
+    expect(container.textContent).toContain("What are we working on?");
     state.navigate.mockClear();
     recordAgentChatVisit("company-a", "user-a", "bob");
     await render();
     expect(state.navigate).toHaveBeenCalledWith("/chats/bob-slug", { replace: true });
   });
 
-  it("waits for the primary without sending anything and preserves the chooser for unavailable primaries", async () => {
+  it("does not wait for primary-agent state to render the chooser", async () => {
     state.primaryLoading = true;
     await render();
     expect(state.navigate).not.toHaveBeenCalled();
-    expect(container.textContent).toContain("Opening chat");
+    expect(container.textContent).toContain("What are we working on?");
     state.primaryLoading = false;
     state.primaryAgentId = "removed";
     await render();
