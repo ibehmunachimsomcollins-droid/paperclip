@@ -137,15 +137,33 @@ export function AgentChat() {
       <p className="text-sm text-muted-foreground">Loading conversation…</p>
     );
   return (
-    <>
-      {greetingError && <div role="alert" className="flex items-center gap-2 text-sm text-destructive">
-        <span>{greetingError}</span>
-        <Button variant="outline" size="sm" onClick={() => setGreetingAttempt(attempt => attempt + 1)}>Retry welcome</Button>
-      </div>}
-      <TaskDetailSurface
-        key={`${agent.id}:${userId}`}
-        conversation={{ agent, issue: chat.data ?? null, ensureIssue, onReady }}
-      />
-    </>
+    <main className="nexus-chat-page flex h-full min-h-0 flex-col overflow-hidden">
+      <header className="nexus-chat-header flex shrink-0 items-center justify-between gap-3 border-b border-border/70 px-3 py-2.5 sm:px-5">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+            <span className="text-sm font-bold tracking-tight">N</span>
+          </div>
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">NEXUS</p>
+            <p className="truncate text-sm font-semibold">Agent workspace</p>
+          </div>
+        </div>
+        <div className="flex min-w-0 items-center gap-2 rounded-full border border-border bg-card px-2.5 py-1.5">
+          <AgentAvatar agent={agent} size={24} />
+          <span className="truncate text-xs font-medium">{agent.name}</span>
+          <span className="hidden rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600 sm:inline">Connected</span>
+        </div>
+      </header>
+      <section className="min-h-0 flex-1 overflow-hidden">
+        {greetingError && <div role="alert" className="mx-auto mt-2 flex max-w-3xl items-center gap-2 px-3 text-sm text-destructive">
+          <span>{greetingError}</span>
+          <Button variant="outline" size="sm" onClick={() => setGreetingAttempt(attempt => attempt + 1)}>Retry welcome</Button>
+        </div>}
+        <TaskDetailSurface
+          key={`${agent.id}:${userId}`}
+          conversation={{ agent, issue: chat.data ?? null, ensureIssue, onReady }}
+        />
+      </section>
+    </main>
   );
 }
