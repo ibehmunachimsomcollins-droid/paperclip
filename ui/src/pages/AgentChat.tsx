@@ -14,6 +14,7 @@ import { TaskDetailSurface } from "./IssueDetail";
 import { isUuidLike, type Issue } from "@paperclipai/shared";
 import { afterVisibleConversationPaint } from "@/lib/onboarding-chat";
 import { Button } from "@/components/ui/button";
+import { AgentAvatar } from "@/components/AgentAvatar";
 
 export function AgentChat() {
   const { agentRef = "" } = useParams<{ agentRef: string }>();
