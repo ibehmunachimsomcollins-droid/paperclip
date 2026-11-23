@@ -7,6 +7,7 @@ services:
     plan: starter
     dockerfilePath: ./Dockerfile
     dockerContext: .
+    dockerCommand: sh scripts/render-entrypoint.sh
     healthCheckPath: /api/health
     disk:
       name: nexus-paperclip-home
