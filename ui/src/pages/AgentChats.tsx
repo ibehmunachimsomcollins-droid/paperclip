@@ -1,6 +1,6 @@
 import { usePrimaryAgentPresentation } from "@/components/primary-agent/PrimaryAgentPresentation";
 import { useEffect, useState } from "react";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Search, Sparkles } from "lucide-react";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ function AgentChatsContent({ companyId, userId, enabled, loaded, agents, chats, 
   const navigate = useNavigate();
   const recentIds = useRecentAgentChats(companyId ?? "", userId);
   const [openingId, setOpeningId] = useState<string | null>(null);
+  const [agentSearch, setAgentSearch] = useState("");
   const [openError, setOpenError] = useState<string | null>(null);
   const agentsView = useQueryView(agents);
   const sessionView = useQueryView(session);
