@@ -63,26 +63,34 @@ function AgentChatsContent({ companyId, userId, enabled, loaded, agents, chats, 
   if (reconnecting) return <p role="status" className="text-sm text-muted-foreground">Loading chat…</p>;
   if (resolvingRecent || entryPath || primary?.loading) return <p role="status" className="text-sm text-muted-foreground">Opening chat…</p>;
   const error = blockingError ?? (recentIds.length > 0 && chatsView.kind === "error" ? chats.error : null);
-  return <div className="mx-auto flex h-full max-w-xl flex-col justify-center gap-6 px-4 py-12">
-    <div className="flex flex-col gap-3">
-      <MessageCircle className="size-6 text-muted-foreground" />
-      <h1 className="text-xl font-semibold">Who would you like to talk to?</h1>
-      <p className="text-sm leading-relaxed text-muted-foreground">Ask a question, think through an idea, or plan the next step with your team.</p>
+  return <div className="mx-auto flex h-full min-h-[60svh] max-w-4xl flex-col justify-center gap-8 px-4 py-8 sm:px-8 sm:py-12">
+    <div className="flex flex-col gap-4">
+      <div className="inline-flex w-fit items-center gap-2 rounded-full border border-border bg-muted/40 px-3 py-1 text-xs font-medium tracking-wide text-muted-foreground">
+        <MessageCircle className="size-3.5" /> NEXUS WORKSPACE
+      </div>
+      <div className="space-y-2">
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">What are we working on?</h1>
+        <p className="max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">Start a conversation with one of your agents. They can help plan, investigate, build, and take action using the capabilities configured in Paperclip.</p>
+      </div>
     </div>
     {error ? <QueryErrorState error={error} action="load your chats" onRetry={() => { agentsView.retry(); chatsView.retry(); sessionView.retry(); }} />
-      : agents.isPending || session.isPending ? <p role="status" className="text-sm text-muted-foreground">Loading agents…</p>
-      : <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      : agents.isPending || session.isPending ? <p role="status" className="text-sm text-muted-foreground">Loading your agents…</p>
+      : <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {(agents.data ?? []).slice(0, 6).map(agent => <button key={agent.id} type="button" disabled={openingId !== null}
           onClick={async () => {
             setOpeningId(agent.id); setOpenError(null);
             try { await openChat(agent); } catch (error) { setOpenError(error instanceof Error ? error.message : "Couldn’t open chat. Try again."); } finally { setOpeningId(null); }
-          }} className="flex items-center gap-3 rounded-lg border border-border p-4 text-left hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50">
-          <AgentAvatar agent={agent} size={32} />
-          <span className="flex min-w-0 flex-col gap-1"><span className="truncate text-sm font-medium">{agent.name}</span><span className="text-xs text-muted-foreground">{openingId === agent.id ? "Opening chat…" : agent.title ?? agent.role}</span></span>
+          }} className="group flex min-h-20 items-center gap-4 rounded-2xl border border-border bg-card p-4 text-left shadow-sm transition-all hover:border-primary/40 hover:bg-accent/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 sm:p-5">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-muted/70"><AgentAvatar agent={agent} size={36} /></div>
+          <span className="flex min-w-0 flex-1 flex-col gap-1"><span className="truncate text-sm font-semibold">{agent.name}</span><span className="line-clamp-2 text-xs leading-5 text-muted-foreground">{openingId === agent.id ? "Opening your conversation…" : agent.title ?? agent.role ?? "AI agent"}</span></span>
+          <span aria-hidden="true" className="text-muted-foreground transition-transform group-hover:translate-x-1">→</span>
         </button>)}
       </div>}
     {openError && <p role="alert" className="text-sm text-destructive">{openError}</p>}
-    {agents.data?.length === 0 && <p className="text-sm text-muted-foreground">Add an agent to start a conversation.</p>}
-    <Button variant="ghost" className="self-start" asChild><Link to="/agents/all">Browse all agents</Link></Button>
+    {agents.data?.length === 0 && <p className="rounded-xl border border-dashed border-border p-5 text-sm text-muted-foreground">No agents yet. Create your first agent to start using NEXUS.</p>}
+    <div className="flex flex-wrap items-center gap-3 border-t border-border pt-5">
+      <Button variant="outline" asChild><Link to="/agents/all">Manage agents</Link></Button>
+      <Button variant="ghost" asChild><Link to="/apps">Tools & integrations</Link></Button>
+    </div>
   </div>;
 }
