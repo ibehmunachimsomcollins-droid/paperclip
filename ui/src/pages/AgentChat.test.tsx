@@ -66,6 +66,7 @@ it("waits for the onboarding conversation to paint before requesting its live gr
   try {
     render();
     await waitFor(() => expect(container.textContent).toContain("History for Ada"));
+    expect(container.querySelector('a[href="/chats"]')?.getAttribute("aria-label")).toBe("Back to NEXUS agent chooser");
     expect(api.greet).not.toHaveBeenCalled();
     flushSync(() => api.onReady!());
     expect(api.greet).not.toHaveBeenCalled();
