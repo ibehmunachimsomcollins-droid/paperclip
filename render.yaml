@@ -44,9 +44,9 @@ services:
         value: local_disk
       - key: PAPERCLIP_STORAGE_LOCAL_DIR
         value: /paperclip/instances/default/data/storage
-  - type: pserv
-    name: nexus-paperclip-db
+
+databases:
+  - name: nexus-paperclip-db
     plan: basic-256mb
     databaseName: paperclip
     user: paperclip
-    diskSizeGB: 1
