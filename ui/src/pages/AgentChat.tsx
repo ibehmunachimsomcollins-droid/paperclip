@@ -152,7 +152,7 @@ export function AgentChat() {
         <div className="flex min-w-0 items-center gap-2 rounded-full border border-border bg-card px-2.5 py-1.5">
           <AgentAvatar agent={agent} size={24} />
           <span className="truncate text-xs font-medium">{agent.name}</span>
-          <span className="hidden rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600 sm:inline">Connected</span>
+          <span className="hidden max-w-36 truncate text-[10px] text-muted-foreground sm:inline">{agent.title ?? agent.role ?? "Agent"}</span>
         </div>
       </header>
       <section className="min-h-0 flex-1 overflow-hidden">
