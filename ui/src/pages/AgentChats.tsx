@@ -25,6 +25,8 @@ function AgentChatsContent({ companyId, userId, enabled, loaded, agents, chats, 
   const agentsView = useQueryView(agents);
   const sessionView = useQueryView(session);
   const chatsView = useQueryView(chats);
+  const blockingError = agentsView.kind === "error" ? agents.error : sessionView.kind === "error" ? session.error : null;
+  const reconnecting = agentsView.kind === "reconnecting" || sessionView.kind === "reconnecting" || chatsView.kind === "reconnecting";
   const error = blockingError ?? (recentIds.length > 0 && chatsView.kind === "error" ? chats.error : null);
   return <div className="mx-auto flex h-full min-h-[60svh] max-w-4xl flex-col justify-center gap-8 px-4 py-8 sm:px-8 sm:py-12">
     <div className="flex flex-col gap-4">
