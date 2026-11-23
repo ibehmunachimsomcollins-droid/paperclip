@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "Paperclip",
-  "short_name": "Paperclip",
-  "description": "AI-powered project management and agent coordination platform",
+  "name": "NEXUS",
+  "short_name": "NEXUS",
+  "description": "A mobile-first AI workspace for conversations with your agents",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
