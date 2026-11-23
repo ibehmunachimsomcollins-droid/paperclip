@@ -14,6 +14,7 @@ import { TaskDetailSurface } from "./IssueDetail";
 import { isUuidLike, type Issue } from "@paperclipai/shared";
 import { afterVisibleConversationPaint } from "@/lib/onboarding-chat";
 import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import { AgentAvatar } from "@/components/AgentAvatar";
 
 export function AgentChat() {
@@ -140,7 +141,8 @@ export function AgentChat() {
   return (
     <main className="nexus-chat-page flex h-full min-h-0 flex-col overflow-hidden">
       <header className="nexus-chat-header flex shrink-0 items-center justify-between gap-3 border-b border-border/70 px-3 py-2.5 sm:px-5">
-        <div className="flex min-w-0 items-center gap-3">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <Link to="/chats" aria-label="Back to NEXUS agent chooser" className="flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><ArrowLeft className="size-4" /></Link>
           <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
             <span className="text-sm font-bold tracking-tight">N</span>
           </div>
