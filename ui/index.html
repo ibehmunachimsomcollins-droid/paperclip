@@ -49,7 +49,7 @@
     <section id="paperclip-startup" role="status" aria-live="polite" hidden>
       <div class="mx-auto flex min-h-screen max-w-2xl flex-col justify-center space-y-4 px-4 py-10">
         <div>
-          <h1 id="paperclip-startup-title" class="text-lg font-semibold">Paperclip couldn’t start</h1>
+          <h1 id="paperclip-startup-title" class="text-lg font-semibold">NEXUS couldn’t start</h1>
           <p id="paperclip-startup-message" class="mt-1 text-sm text-muted-foreground">
             Part of the app failed to load. Check your connection and reload this page to try again.
           </p>
@@ -82,7 +82,7 @@
         };
         const onFailure = () => {
           if (finished()) return cleanup();
-          title.textContent = "Paperclip couldn’t start";
+          title.textContent = "NEXUS couldn’t start";
           message.textContent = "Part of the app failed to load. Check your connection and reload this page to try again.";
           notice.hidden = false;
         };
@@ -97,7 +97,7 @@
         const timer = setTimeout(() => {
           if (finished()) return cleanup();
           if (!notice.hidden) return;
-          title.textContent = "Paperclip is taking longer to load";
+          title.textContent = "NEXUS is taking longer to load";
           message.textContent = "You can keep waiting, or reload this page to try again.";
           notice.hidden = false;
         }, 30_000);
