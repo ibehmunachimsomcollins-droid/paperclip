@@ -4,15 +4,11 @@ services:
   - type: web
     name: nexus-paperclip-web
     runtime: docker
-    plan: starter
+    plan: free
     dockerfilePath: ./Dockerfile
     dockerContext: .
     dockerCommand: sh scripts/render-entrypoint.sh
     healthCheckPath: /api/health
-    disk:
-      name: nexus-paperclip-home
-      mountPath: /paperclip
-      sizeGB: 10
     envVars:
       - key: PORT
         value: "3100"
@@ -47,6 +43,6 @@ services:
 
 databases:
   - name: nexus-paperclip-db
-    plan: basic-256mb
+    plan: free
     databaseName: paperclip
     user: paperclip
