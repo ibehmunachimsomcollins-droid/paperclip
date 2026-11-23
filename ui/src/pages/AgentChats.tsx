@@ -77,7 +77,7 @@ function AgentChatsContent({ companyId, userId, enabled, loaded, agents, chats, 
     {error ? <QueryErrorState error={error} action="load your chats" onRetry={() => { agentsView.retry(); chatsView.retry(); sessionView.retry(); }} />
       : agents.isPending || session.isPending ? <p role="status" className="text-sm text-muted-foreground">Loading your agents…</p>
       : <div className="space-y-3">
-        {(agents.data ?? []).length > 3 && <label className="relative block"><Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><input value={agentSearch} onChange={event => setAgentSearch(event.target.value)} placeholder="Search your agents…" aria-label="Search agents" className="h-11 w-full rounded-xl border border-border bg-card pl-10 pr-3 text-sm outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/10" /></label>}
+        <label className="relative block"><Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><input value={agentSearch} onChange={event => setAgentSearch(event.target.value)} placeholder="Search your agents…" aria-label="Search agents" className="h-11 w-full rounded-xl border border-border bg-card pl-10 pr-3 text-sm outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/10" /></label>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {(agents.data ?? []).filter(agent => !agentSearch.trim() || [agent.name, agent.title, agent.role].some(value => typeof value === "string" && value.toLowerCase().includes(agentSearch.trim().toLowerCase()))).slice(0, 12).map(agent => <button key={agent.id} type="button" disabled={openingId !== null}
           onClick={async () => {
@@ -88,7 +88,7 @@ function AgentChatsContent({ companyId, userId, enabled, loaded, agents, chats, 
           <span className="flex min-w-0 flex-1 flex-col gap-1"><span className="truncate text-sm font-semibold">{agent.name}</span><span className="line-clamp-2 text-xs leading-5 text-muted-foreground">{openingId === agent.id ? "Opening your conversation…" : agent.title ?? agent.role ?? "AI agent"}</span></span>
           <span aria-hidden="true" className="text-muted-foreground transition-transform group-hover:translate-x-1">→</span>
         </button>)}
-        {(agents.data ?? []).filter(agent => !agentSearch.trim() || [agent.name, agent.title, agent.role].some(value => typeof value === "string" && value.toLowerCase().includes(agentSearch.trim().toLowerCase()))).length === 0 && <p className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">No agents found for “{agentSearch}”.</p>}
+        {(agents.data ?? []).filter(agent => !agentSearch.trim() || [agent.name, agent.title, agent.role].some(value => typeof value === "string" && value.toLowerCase().includes(agentSearch.trim().toLowerCase()))).length === 0 && agentSearch.trim() !== "" && <p className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">No agents found for “{agentSearch}”.</p>}
         </div></div>}
     {openError && <p role="alert" className="text-sm text-destructive">{openError}</p>}
     {agents.data?.length === 0 && <p className="rounded-xl border border-dashed border-border p-5 text-sm text-muted-foreground">No agents yet. Create your first agent to start using NEXUS.</p>}
