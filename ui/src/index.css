@@ -5830,3 +5830,13 @@ html:has(.design-proposal-theme) .agent-markdown-name-field [data-slot="input"],
 }
 .routine-table { min-width: max-content; }
 .routine-table-grid { display: grid; align-items: center; gap: calc(var(--spacing) * 3); }
+
+
+/* NEXUS mobile conversation chrome */
+.nexus-chat-page { background: var(--background); }
+.nexus-chat-header { background: color-mix(in srgb, var(--background) 94%, var(--primary)); backdrop-filter: blur(14px); }
+@media (max-width: 640px) {
+  .nexus-chat-header { padding-top: max(.65rem, env(safe-area-inset-top)); padding-inline: .75rem; }
+  .nexus-chat-page { min-height: 0; height: 100%; }
+  .nexus-chat-page > section { min-height: 0; overscroll-behavior: contain; }
+}
