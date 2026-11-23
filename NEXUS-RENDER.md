@@ -11,6 +11,11 @@ This fork has a Render Blueprint for a single-service, web-hosted Paperclip depl
 5. Open the public service URL and finish the Paperclip account/bootstrap flow. Keep sign-up enabled only while setting up access; once your admin account is created, disable public sign-up from supported Paperclip settings if available.
 6. Configure AI provider credentials and agent execution providers through Paperclip's existing settings. Provider secrets are server-side; do not put keys in frontend code.
 
+## NEXUS interface
+
+The chat experience is branded NEXUS and uses a mobile-first chooser with searchable agents, recent agent shortcuts, and a conversation header with a back-to-chooser control. The existing Paperclip chat thread, agent execution, task records, integrations, and permissions remain the underlying system.
+
+
 ## Render resources
 
 - Docker web service: builds the existing root `Dockerfile` (production target).
