@@ -5,9 +5,8 @@ import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { Button } from "@/components/ui/button";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { useAgentChatNavigation, useOpenAgentChat } from "@/hooks/useAgentChatNavigation";
-import { recordedAgentChatIssueId, useRecentAgentChats } from "@/lib/recent-agent-chats";
-import { Link, useNavigate } from "@/lib/router";
-import { agentRouteRef } from "@/lib/utils";
+import { useRecentAgentChats } from "@/lib/recent-agent-chats";
+import { Link } from "@/lib/router";
 
 export function AgentChats() {
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -19,7 +18,6 @@ export function AgentChats() {
 
 function AgentChatsContent({ companyId, userId, enabled, loaded, agents, chats, session }: Pick<ReturnType<typeof useAgentChatNavigation>, "companyId" | "userId" | "enabled" | "loaded" | "agents" | "chats" | "session">) {
   const openChat = useOpenAgentChat(companyId, userId);
-  const navigate = useNavigate();
   const recentIds = useRecentAgentChats(companyId ?? "", userId);
   const [openingId, setOpeningId] = useState<string | null>(null);
   const [agentSearch, setAgentSearch] = useState("");
@@ -27,39 +25,6 @@ function AgentChatsContent({ companyId, userId, enabled, loaded, agents, chats, 
   const agentsView = useQueryView(agents);
   const sessionView = useQueryView(session);
   const chatsView = useQueryView(chats);
-  // Only a real failure blocks the entry redirect; an outage waits it out below.
-  const blockingError = agentsView.kind === "error" ? agents.error : sessionView.kind === "error" ? session.error : null;
-  const reconnecting = agentsView.kind === "reconnecting" || sessionView.kind === "reconnecting" || chatsView.kind === "reconnecting";
-  const firstId = recentIds[0];
-  const firstAgent = agents.data?.find(agent => agent.id === firstId);
-  // An empty chat with an active agent can reopen from the roster alone. A
-  // missing agent or a saved issue needs history to validate that visit.
-  const needsHistory = !!firstId && (!firstAgent || !!recordedAgentChatIssueId(companyId ?? "", userId, firstId));
-  const resolvingRecent = recentIds.length > 0 && !blockingError && (!agents.isFetched || !session.isFetched || (needsHistory && !chats.isFetched && !chats.error));
-  const recentChatPath = loaded && enabled && companyId && !blockingError && !resolvingRecent
-    ? recentIds.map(id => {
-      const agent = agents.data?.find(item => item.id === id);
-      const historyIssue = chats.data?.find(chat => chat.conversationAgentId === id);
-      const savedIssueId = recordedAgentChatIssueId(companyId, userId, id);
-      // A deleted or inaccessible issue must not silently reopen as a new chat.
-      if (savedIssueId && chats.isSuccess && historyIssue?.id !== savedIssueId) return null;
-      if (agent) return `/chats/${encodeURIComponent(agentRouteRef(agent))}`;
-      if (historyIssue) return `/chats/${encodeURIComponent(id)}`;
-      return null;
-    }).find((path): path is string => path !== null)
-    : undefined;
-  // The NEXUS home is a chooser, not an auto-launch shortcut. Returning users
-  // can still reopen their most recent valid conversation; first-time visitors
-  // always get the agent roster even when a primary agent is configured.
-  const entryPath = recentChatPath;
-  useEffect(() => {
-    if (entryPath) navigate(entryPath, { replace: true });
-  }, [navigate, entryPath]);
-  if (!loaded) return <p role="status" className="text-sm text-muted-foreground">Loading chat…</p>;
-  if (!enabled) return <p className="text-sm text-muted-foreground">Agent Chat is off for this instance. An administrator can enable it in <Link className="underline underline-offset-4" to="/company/settings/instance/experimental#experimental-enableAgentChat">Experimental settings</Link>. Your workspace preference does not change Chat availability.</p>;
-  if (!companyId) return <p className="text-sm text-muted-foreground">Select a company to start a conversation.</p>;
-  if (reconnecting) return <p role="status" className="text-sm text-muted-foreground">Loading chat…</p>;
-  if (resolvingRecent || entryPath) return <p role="status" className="text-sm text-muted-foreground">Opening chat…</p>;
   const error = blockingError ?? (recentIds.length > 0 && chatsView.kind === "error" ? chats.error : null);
   return <div className="mx-auto flex h-full min-h-[60svh] max-w-4xl flex-col justify-center gap-8 px-4 py-8 sm:px-8 sm:py-12">
     <div className="flex flex-col gap-4">
@@ -73,7 +38,9 @@ function AgentChatsContent({ companyId, userId, enabled, loaded, agents, chats, 
     </div>
     {error ? <QueryErrorState error={error} action="load your chats" onRetry={() => { agentsView.retry(); chatsView.retry(); sessionView.retry(); }} />
       : agents.isPending || session.isPending ? <p role="status" className="text-sm text-muted-foreground">Loading your agents…</p>
-      : <div className="space-y-3">
+      : <div className="space-y-4">
+        {recentIds.length > 0 && <section className="space-y-2"><h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recent</h2><div className="flex gap-2 overflow-x-auto pb-1">{recentIds.map(id => { const recentAgent = agents.data?.find(agent => agent.id === id && agent.status !== "terminated"); return recentAgent ? <button key={id} type="button" disabled={openingId !== null} onClick={async () => { setOpeningId(id); setOpenError(null); try { await openChat(recentAgent); } catch (error) { setOpenError(error instanceof Error ? error.message : "Couldn’t open chat. Try again."); } finally { setOpeningId(null); } }} className="flex min-w-0 max-w-52 shrink-0 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 text-left hover:border-primary/40 disabled:opacity-50"><AgentAvatar agent={recentAgent} size={28} /><span className="truncate text-xs font-medium">{recentAgent.name}</span></button> : null; })}</div></section>}
+        <div className="space-y-3">
         <label className="relative block"><Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><input value={agentSearch} onChange={event => setAgentSearch(event.target.value)} placeholder="Search your agents…" aria-label="Search agents" className="h-11 w-full rounded-xl border border-border bg-card pl-10 pr-3 text-sm outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/10" /></label>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {(agents.data ?? []).filter(agent => !agentSearch.trim() || [agent.name, agent.title, agent.role].some(value => typeof value === "string" && value.toLowerCase().includes(agentSearch.trim().toLowerCase()))).slice(0, 12).map(agent => <button key={agent.id} type="button" disabled={openingId !== null}
