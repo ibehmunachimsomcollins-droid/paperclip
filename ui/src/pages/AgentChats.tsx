@@ -36,7 +36,7 @@ function AgentChatsContent({ companyId, userId, enabled, loaded, agents, chats, 
       </div>
       <div className="space-y-2">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">What are we working on?</h1>
-        <p className="max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">Start a conversation with one of your agents. They can help plan, investigate, build, and take action using the capabilities configured in Paperclip.</p>
+        <p className="max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">Choose an agent to plan, investigate, build, or take action. Each agent works with its own tools and permissions.</p>
       </div>
     </div>
     {error ? <QueryErrorState error={error} action="load your chats" onRetry={() => { agentsView.retry(); chatsView.retry(); sessionView.retry(); }} />
