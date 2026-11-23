@@ -1,4 +1,3 @@
-import { usePrimaryAgentPresentation } from "@/components/primary-agent/PrimaryAgentPresentation";
 import { useEffect, useState } from "react";
 import { MessageCircle, Search } from "lucide-react";
 import { AgentAvatar } from "@/components/AgentAvatar";
@@ -19,7 +18,6 @@ export function AgentChats() {
 }
 
 function AgentChatsContent({ companyId, userId, enabled, loaded, agents, chats, session }: Pick<ReturnType<typeof useAgentChatNavigation>, "companyId" | "userId" | "enabled" | "loaded" | "agents" | "chats" | "session">) {
-  const primary = usePrimaryAgentPresentation(companyId);
   const openChat = useOpenAgentChat(companyId, userId);
   const navigate = useNavigate();
   const recentIds = useRecentAgentChats(companyId ?? "", userId);
@@ -50,11 +48,10 @@ function AgentChatsContent({ companyId, userId, enabled, loaded, agents, chats, 
       return null;
     }).find((path): path is string => path !== null)
     : undefined;
-  const primaryAgent = agents.data?.find(agent => agent.id === primary?.primaryAgentId
-    && agent.status !== "terminated" && agent.status !== "pending_approval");
-  const entryPath = recentChatPath ?? (loaded && enabled && !blockingError && !resolvingRecent
-    && agents.isFetched && session.isFetched && !primary?.loading && primaryAgent
-    ? `/chats/${encodeURIComponent(agentRouteRef(primaryAgent))}` : undefined);
+  // The NEXUS home is a chooser, not an auto-launch shortcut. Returning users
+  // can still reopen their most recent valid conversation; first-time visitors
+  // always get the agent roster even when a primary agent is configured.
+  const entryPath = recentChatPath;
   useEffect(() => {
     if (entryPath) navigate(entryPath, { replace: true });
   }, [navigate, entryPath]);
@@ -62,7 +59,7 @@ function AgentChatsContent({ companyId, userId, enabled, loaded, agents, chats, 
   if (!enabled) return <p className="text-sm text-muted-foreground">Agent Chat is off for this instance. An administrator can enable it in <Link className="underline underline-offset-4" to="/company/settings/instance/experimental#experimental-enableAgentChat">Experimental settings</Link>. Your workspace preference does not change Chat availability.</p>;
   if (!companyId) return <p className="text-sm text-muted-foreground">Select a company to start a conversation.</p>;
   if (reconnecting) return <p role="status" className="text-sm text-muted-foreground">Loading chat…</p>;
-  if (resolvingRecent || entryPath || primary?.loading) return <p role="status" className="text-sm text-muted-foreground">Opening chat…</p>;
+  if (resolvingRecent || entryPath) return <p role="status" className="text-sm text-muted-foreground">Opening chat…</p>;
   const error = blockingError ?? (recentIds.length > 0 && chatsView.kind === "error" ? chats.error : null);
   return <div className="mx-auto flex h-full min-h-[60svh] max-w-4xl flex-col justify-center gap-8 px-4 py-8 sm:px-8 sm:py-12">
     <div className="flex flex-col gap-4">
