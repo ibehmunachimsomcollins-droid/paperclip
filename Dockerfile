@@ -326,6 +326,9 @@ FROM base AS build
 WORKDIR /app
 COPY --from=deps /app /app
 COPY --exclude=docker/remote-runtimes . .
+# Preserve the service-worker asset explicitly; the UI build stamps it into dist/sw.js.
+COPY ui/public /app/ui/public
+RUN test -f /app/ui/public/sw.js
 COPY --from=runner-artifacts /runner-package/dist /app/packages/paperclip-runner/dist
 COPY --from=runner-artifacts /runner-package/node_modules/.cache/paperclip-runner-build-inputs.json /app/packages/paperclip-runner/node_modules/.cache/paperclip-runner-build-inputs.json
 ARG PAPERCLIP_RUNNER_EXPECT_INPUTS_DIGEST=""
