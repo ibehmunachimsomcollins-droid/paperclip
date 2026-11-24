@@ -45,51 +45,6 @@ RUN pnpm install --frozen-lockfile --lockfile-only --offline --ignore-scripts --
     fi; \
     exit 1; }
 
-FROM runner-lockfile AS deps
-WORKDIR /app
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
-COPY cli/package.json cli/
-COPY server/package.json server/
-COPY ui/package.json ui/
-COPY packages/shared/package.json packages/shared/
-COPY packages/db/package.json packages/db/
-COPY packages/adapter-utils/package.json packages/adapter-utils/
-COPY packages/google-sheets-mcp-server/package.json packages/google-sheets-mcp-server/
-COPY packages/kv-demo-mcp-server/package.json packages/kv-demo-mcp-server/
-COPY packages/mcp-server/package.json packages/mcp-server/
-COPY packages/paperclip-eval-kernel/package.json packages/paperclip-eval-kernel/
-COPY packages/paperclip-runner/package.json packages/paperclip-runner/
-COPY packages/skills-catalog/package.json packages/skills-catalog/
-COPY packages/tailscale-https-broker/package.json packages/tailscale-https-broker/
-COPY packages/teams-catalog/package.json packages/teams-catalog/
-COPY packages/adapters/claude-local/package.json packages/adapters/claude-local/
-COPY packages/adapters/codex-local/package.json packages/adapters/codex-local/
-COPY packages/adapters/cursor-cloud/package.json packages/adapters/cursor-cloud/
-COPY packages/adapters/cursor-local/package.json packages/adapters/cursor-local/
-COPY packages/adapters/gemini-local/package.json packages/adapters/gemini-local/
-COPY packages/adapters/grok-local/package.json packages/adapters/grok-local/
-COPY packages/adapters/kimi-local/package.json packages/adapters/kimi-local/
-COPY packages/adapters/hermes/package.json packages/adapters/hermes/
-COPY packages/adapters/hermes-gateway/package.json packages/adapters/hermes-gateway/
-COPY packages/adapters/openclaw-gateway/package.json packages/adapters/openclaw-gateway/
-COPY packages/adapters/opencode-local/package.json packages/adapters/opencode-local/
-COPY packages/adapters/pi-local/package.json packages/adapters/pi-local/
-COPY packages/plugins/sdk/package.json packages/plugins/sdk/
-COPY --parents packages/plugins/sandbox-providers/./*/package.json packages/plugins/sandbox-providers/
-COPY packages/plugins/paperclip-plugin-fake-sandbox/package.json packages/plugins/paperclip-plugin-fake-sandbox/
-COPY packages/plugins/plugin-llm-wiki/package.json packages/plugins/plugin-llm-wiki/
-COPY packages/plugins/plugin-workspace-diff/package.json packages/plugins/plugin-workspace-diff/
-COPY patches/ patches/
-COPY scripts/link-plugin-dev-sdk.mjs scripts/
-COPY packages/paperclip-runner/scripts/install-copilot-assets.mjs packages/paperclip-runner/scripts/materialize-copilot-binary.mjs packages/paperclip-runner/scripts/copilot-inner-distribution.mjs packages/paperclip-runner/scripts/
-COPY packages/paperclip-runner/src/drivers/acpx/copilot-installation.ts packages/paperclip-runner/src/drivers/acpx/
-COPY server/scripts/install-copilot-assets.mjs server/scripts/
-COPY server/src/services/copilot-connection-probe.ts server/src/services/
-
-# CI owns repository lock updates. Resolve manifest changes in the image's
-# private build tree, then install from that exact generated lock.
-RUN pnpm install --resolution-only --ignore-scripts --no-frozen-lockfile && pnpm install --frozen-lockfile
-
 # Runner image (`--target runner-artifacts`).
 #
 # The stages below build the Runner once, from its own inputs only, as a plain
@@ -159,7 +114,8 @@ FROM runner-artifacts-node AS runner-artifacts-toolchain
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
-    CARGO_PROFILE_RELEASE_STRIP=symbols
+    CARGO_PROFILE_RELEASE_STRIP=symbols \
+    CARGO_BUILD_JOBS=1
 ARG RUSTUP_VERSION=1.29.0
 ARG RUSTUP_SHA256_AMD64=4acc9acc76d5079515b46346a485974457b5a79893cfb01112423c89aeb5aa10
 ARG RUSTUP_SHA256_ARM64=9732d6c5e2a098d3521fca8145d826ae0aaa067ef2385ead08e6feac88fa5792
@@ -192,6 +148,52 @@ COPY --from=runner-artifacts-context /packages/paperclip-runner/acpx-profiles.js
 RUN find runner protocol -type f -exec touch -d @0 {} + \
   && touch -d @0 rust-toolchain.toml acpx-profiles.json antigravity-distributions.json \
   && cargo build --release --manifest-path runner/Cargo.toml --locked -p paperclip-runner-core --bin paperclip-runnerd
+
+FROM runner-lockfile AS deps
+WORKDIR /app
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
+COPY cli/package.json cli/
+COPY server/package.json server/
+COPY ui/package.json ui/
+COPY packages/shared/package.json packages/shared/
+COPY packages/db/package.json packages/db/
+COPY packages/adapter-utils/package.json packages/adapter-utils/
+COPY packages/google-sheets-mcp-server/package.json packages/google-sheets-mcp-server/
+COPY packages/kv-demo-mcp-server/package.json packages/kv-demo-mcp-server/
+COPY packages/mcp-server/package.json packages/mcp-server/
+COPY packages/paperclip-eval-kernel/package.json packages/paperclip-eval-kernel/
+COPY packages/paperclip-runner/package.json packages/paperclip-runner/
+COPY packages/skills-catalog/package.json packages/skills-catalog/
+COPY packages/tailscale-https-broker/package.json packages/tailscale-https-broker/
+COPY packages/teams-catalog/package.json packages/teams-catalog/
+COPY packages/adapters/claude-local/package.json packages/adapters/claude-local/
+COPY packages/adapters/codex-local/package.json packages/adapters/codex-local/
+COPY packages/adapters/cursor-cloud/package.json packages/adapters/cursor-cloud/
+COPY packages/adapters/cursor-local/package.json packages/adapters/cursor-local/
+COPY packages/adapters/gemini-local/package.json packages/adapters/gemini-local/
+COPY packages/adapters/grok-local/package.json packages/adapters/grok-local/
+COPY packages/adapters/kimi-local/package.json packages/adapters/kimi-local/
+COPY packages/adapters/hermes/package.json packages/adapters/hermes/
+COPY packages/adapters/hermes-gateway/package.json packages/adapters/hermes-gateway/
+COPY packages/adapters/openclaw-gateway/package.json packages/adapters/openclaw-gateway/
+COPY packages/adapters/opencode-local/package.json packages/adapters/opencode-local/
+COPY packages/adapters/pi-local/package.json packages/adapters/pi-local/
+COPY packages/plugins/sdk/package.json packages/plugins/sdk/
+COPY --parents packages/plugins/sandbox-providers/./*/package.json packages/plugins/sandbox-providers/
+COPY packages/plugins/paperclip-plugin-fake-sandbox/package.json packages/plugins/paperclip-plugin-fake-sandbox/
+COPY packages/plugins/plugin-llm-wiki/package.json packages/plugins/plugin-llm-wiki/
+COPY packages/plugins/plugin-workspace-diff/package.json packages/plugins/plugin-workspace-diff/
+COPY patches/ patches/
+COPY scripts/link-plugin-dev-sdk.mjs scripts/
+COPY packages/paperclip-runner/scripts/install-copilot-assets.mjs packages/paperclip-runner/scripts/materialize-copilot-binary.mjs packages/paperclip-runner/scripts/copilot-inner-distribution.mjs packages/paperclip-runner/scripts/
+COPY packages/paperclip-runner/src/drivers/acpx/copilot-installation.ts packages/paperclip-runner/src/drivers/acpx/
+COPY server/scripts/install-copilot-assets.mjs server/scripts/
+COPY server/src/services/copilot-connection-probe.ts server/src/services/
+
+# CI owns repository lock updates. Resolve manifest changes in the image's
+# private build tree, then install from that exact generated lock.
+RUN --mount=type=bind,from=runner-artifacts-runnerd,source=/workspace/packages/paperclip-runner/runner/target,target=/tmp/runnerd-target \
+  pnpm install --resolution-only --ignore-scripts --no-frozen-lockfile && pnpm install --frozen-lockfile
 
 FROM runner-artifacts-runnerd AS runner-artifacts-build
 WORKDIR /workspace
@@ -237,7 +239,8 @@ ENV NODE_OPTIONS=--max-old-space-size=4096 \
 # file does. The last commands sort the tree into the layers of the two final
 # stages. `dist` is what the Runner's own build writes: its large files change
 # with the Runner's source, so they stay with the content that does.
-RUN set -eu; \
+RUN --mount=type=bind,from=deps,source=/app/node_modules/.modules.yaml,target=/tmp/paperclip-deps.modules.yaml \
+    set -eu; \
     revision="${PAPERCLIP_RUNNER_SOURCE_REVISION:-${PAPERCLIP_BUILD_COMMIT}}"; \
     publication="${PAPERCLIP_RUNNER_IMAGE_PUBLICATION}"; \
     case "$publication" in ""|1) ;; *) echo "ERROR: PAPERCLIP_RUNNER_IMAGE_PUBLICATION must be 1 or unset" >&2; exit 1 ;; esac; \
@@ -381,6 +384,10 @@ ARG USER_GID=1000
 # freeze the tools until an unrelated cache bust.
 ARG CLI_TOOLS_CACHE_EPOCH=""
 WORKDIR /app
+# Wait for the memory-intensive workspace and Runner builds before installing
+# the four global CLI toolchains in this stage; Render's builder has an 8 GiB
+# ceiling, so do not run these peak-memory steps concurrently.
+RUN --mount=type=bind,from=build,source=/app/server/dist/index.js,target=/tmp/paperclip-build-ready true
 # Tool and OS layer BEFORE the app copy: it references nothing from /app, and
 # the app copy changes on every commit — ordered the other way around, this
 # (the single most expensive layer: four CLI toolchains + apt, per arch) can
