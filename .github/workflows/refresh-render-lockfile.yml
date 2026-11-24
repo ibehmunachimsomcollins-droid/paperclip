@@ -1,0 +1,37 @@
+name: Refresh pnpm lockfile for Render
+
+on:
+  push:
+    branches: [nexus-render-web]
+    paths:
+      - .lockfile-refresh-trigger
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-lockfile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: nexus-render-web
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+      - name: Resolve lockfile
+        run: pnpm install --resolution-only --ignore-scripts --no-frozen-lockfile
+      - name: Commit lockfile if changed
+        run: |
+          if git diff --quiet -- pnpm-lock.yaml; then
+            echo "Lockfile unchanged"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add pnpm-lock.yaml
+            git commit -m "Refresh pnpm lockfile for Render build"
+            git push
+          fi
