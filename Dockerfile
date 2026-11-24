@@ -194,10 +194,8 @@ COPY server/src/services/copilot-connection-probe.ts server/src/services/
 # private build tree, then install from that exact generated lock.
 ENV NODE_OPTIONS=--max-old-space-size=1024 UV_THREADPOOL_SIZE=1
 RUN --mount=type=bind,from=runner-artifacts-runnerd,source=/workspace/packages/paperclip-runner/runner/target,target=/tmp/runnerd-target \
-  pnpm install --resolution-only --ignore-scripts --no-frozen-lockfile --network-concurrency=1 --child-concurrency=1 \
-    --filter '@paperclipai/server...' --filter '@paperclipai/ui...' --filter '@paperclipai/plugin-sdk...' \
-  && pnpm install --frozen-lockfile --ignore-scripts --network-concurrency=1 --child-concurrency=1 \
-    --filter '@paperclipai/server...' --filter '@paperclipai/ui...' --filter '@paperclipai/plugin-sdk...'
+  pnpm install --frozen-lockfile --ignore-scripts --network-concurrency=1 --child-concurrency=1 --filter '@paperclipai/server...'
+RUN pnpm install --frozen-lockfile --ignore-scripts --network-concurrency=1 --child-concurrency=1 --filter '@paperclipai/ui...'
 
 FROM runner-artifacts-runnerd AS runner-artifacts-build
 WORKDIR /workspace
