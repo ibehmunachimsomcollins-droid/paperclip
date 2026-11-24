@@ -213,7 +213,7 @@ ARG PAPERCLIP_RUNNER_IMAGE_PUBLICATION=""
 # build-container memory ceiling. The daemon was compiled in the preceding
 # cached stage; serial Cargo jobs also prevent a parallel rebuild from
 # multiplying peak RSS when source fingerprints invalidate that layer.
-ENV NODE_OPTIONS=--max-old-space-size=4096 \\
+ENV NODE_OPTIONS=--max-old-space-size=4096 \
     CARGO_BUILD_JOBS=1
 # One layer: the install tree and the pnpm store are removed before the layer
 # is committed, and the pack is granted a+rX in the layer that writes it. A
