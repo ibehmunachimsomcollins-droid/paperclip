@@ -56,7 +56,7 @@ function AgentChatsContent({ companyId, userId, enabled, loaded, agents, chats, 
           <span aria-hidden="true" className="text-muted-foreground transition-transform group-hover:translate-x-1">→</span>
         </button>)}
         {eligibleAgents.filter(agent => !agentSearch.trim() || [agent.name, agent.title, agent.role].some(value => typeof value === "string" && value.toLowerCase().includes(agentSearch.trim().toLowerCase()))).length === 0 && agentSearch.trim() !== "" && <p className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">No agents found for “{agentSearch}”.</p>}
-        </div></div>}
+        </div></div></div>}
     {openError && <p role="alert" className="text-sm text-destructive">{openError}</p>}
     {agents.isSuccess && eligibleAgents.length === 0 && <p className="rounded-xl border border-dashed border-border p-5 text-sm text-muted-foreground">No agents yet. Create your first agent to start using NEXUS.</p>}
     <div className="flex flex-wrap items-center gap-3 border-t border-border pt-5">
