@@ -355,8 +355,7 @@ FROM base AS runner-provider-pack
 # carries the source revision). Move the large files to their own tree so
 # production can copy them as a layer that stays identical between commits.
 # Normalized mtimes keep that layer's bytes identical when this stage reruns.
-COPY --from=runner-artifacts /provider-pack/ /runner-artifacts/provider-pack/
-COPY --from=runner-artifacts /provider-pack.archives /runner-artifacts/provider-pack.archive.json /runner-artifacts/
+COPY --from=runner-artifacts / /runner-artifacts/
 RUN mkdir -p /provider-pack /provider-pack-large /provider-pack-transport \
   && if [ -f /runner-artifacts/provider-pack/provider-pack.json ]; then \
     cp -a /runner-artifacts/provider-pack/. /provider-pack/ \
