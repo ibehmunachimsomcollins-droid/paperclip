@@ -17,7 +17,9 @@ export default defineConfig(({ mode }) => ({
     ),
   },
   plugins: [react(), tailwindcss(), serviceWorkerBuildIdPlugin(), preloadIssueDetail()],
+  publicDir: path.resolve(__dirname, "./public"),
   build: {
+    copyPublicDir: true,
     minify: "esbuild",
     rolldownOptions: {
       output: {
