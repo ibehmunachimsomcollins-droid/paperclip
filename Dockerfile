@@ -217,7 +217,7 @@ ARG PAPERCLIP_RUNNER_IMAGE_PUBLICATION=""
 # build-container memory ceiling. The daemon was compiled in the preceding
 # cached stage; serial Cargo jobs also prevent a parallel rebuild from
 # multiplying peak RSS when source fingerprints invalidate that layer.
-ENV NODE_OPTIONS=--max-old-space-size=4096 \
+ENV NODE_OPTIONS=--max-old-space-size=2048 \
     CARGO_BUILD_JOBS=1
 # One layer: the install tree and the pnpm store are removed before the layer
 # is committed, and the pack is granted a+rX in the layer that writes it. A
@@ -249,7 +249,7 @@ RUN --mount=type=bind,from=deps,source=/app/node_modules/.modules.yaml,target=/t
     if [ -n "$publication" ] && [ -z "$revision" ]; then echo "ERROR: a publication build needs PAPERCLIP_RUNNER_SOURCE_REVISION" >&2; exit 1; fi; \
     find packages/paperclip-runner/runner packages/paperclip-runner/protocol -type f -exec touch -d @0 {} +; \
     touch -d @0 packages/paperclip-runner/rust-toolchain.toml packages/paperclip-runner/acpx-profiles.json packages/paperclip-runner/antigravity-distributions.json; \
-    pnpm install --frozen-lockfile --filter '@paperclipai/paperclip-runner...' || { \
+    pnpm install --frozen-lockfile --ignore-scripts --network-concurrency=1 --child-concurrency=1 --filter '@paperclipai/paperclip-runner...' || { \
       echo "ERROR: the frozen install failed. If pnpm reported ERR_PNPM_OUTDATED_LOCKFILE, the committed pnpm-lock.yaml is behind the Runner's manifests. The repository's lockfile refresh fixes that on master. For a local build only, resolve it first: pnpm install --resolution-only --ignore-scripts --no-frozen-lockfile" >&2; \
       exit 1; \
     }; \
