@@ -84,7 +84,17 @@ export function serviceWorkerBuildIdPlugin(
       }
     },
     closeBundle() {
-      const swPath = path.resolve(root, outDir, serviceWorkerFileName);
+      const publicDir = path.resolve(root, "public");
+      const outputDir = path.resolve(root, outDir);
+      if (!fs.existsSync(path.resolve(publicDir, serviceWorkerFileName))) {
+        throw new Error(`service worker source is missing from ${publicDir}`);
+      }
+      // Vite 8's output lifecycle can run this closeBundle hook before the
+      // public-directory copy is visible. Copy public assets here as a final,
+      // deterministic step, then stamp the worker in the emitted directory.
+      fs.mkdirSync(outputDir, { recursive: true });
+      fs.cpSync(publicDir, outputDir, { recursive: true, force: true });
+      const swPath = path.resolve(outputDir, serviceWorkerFileName);
       const source = fs.readFileSync(swPath, "utf8");
       const css = fs.readFileSync(path.resolve(root, "src/index.css"), "utf8");
       const stamped = stampServiceWorkerBuildId(
