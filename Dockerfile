@@ -3,7 +3,7 @@ FROM node:24-trixie-slim AS base
 ARG USER_UID=1000
 ARG USER_GID=1000
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends ca-certificates gosu curl gh git wget ripgrep python3 tini build-essential \
+  && apt-get install -y --no-install-recommends ca-certificates gosu curl gh git wget ripgrep python3 tini \
   && rm -rf /var/lib/apt/lists/* \
   && corepack enable
 
@@ -194,8 +194,8 @@ COPY server/src/services/copilot-connection-probe.ts server/src/services/
 # private build tree, then install from that exact generated lock.
 ENV NODE_OPTIONS=--max-old-space-size=1024 UV_THREADPOOL_SIZE=1
 RUN --mount=type=bind,from=runner-artifacts-runnerd,source=/workspace/packages/paperclip-runner/runner/target,target=/tmp/runnerd-target \
-  pnpm install --resolution-only --ignore-scripts --no-frozen-lockfile --network-concurrency=2 --child-concurrency=1 --workspace-concurrency=1 \
-  && pnpm install --frozen-lockfile --network-concurrency=4 --child-concurrency=1
+  pnpm install --resolution-only --ignore-scripts --no-frozen-lockfile --network-concurrency=1 --child-concurrency=1 --workspace-concurrency=1 \
+  && pnpm install --frozen-lockfile --ignore-scripts --network-concurrency=1 --child-concurrency=1 --workspace-concurrency=1
 
 FROM runner-artifacts-runnerd AS runner-artifacts-build
 WORKDIR /workspace
