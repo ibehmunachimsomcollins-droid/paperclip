@@ -14,6 +14,7 @@ import { TaskDetailSurface } from "./IssueDetail";
 import { isUuidLike, type Issue } from "@paperclipai/shared";
 import { afterVisibleConversationPaint } from "@/lib/onboarding-chat";
 import { Button } from "@/components/ui/button";
+import { NexusShell } from "@/nexus";
 
 export function AgentChat() {
   const { agentRef = "" } = useParams<{ agentRef: string }>();
@@ -137,7 +138,7 @@ export function AgentChat() {
       <p className="text-sm text-muted-foreground">Loading conversation…</p>
     );
   return (
-    <>
+    <NexusShell title={agent.name} agent={agent}>
       {greetingError && <div role="alert" className="flex items-center gap-2 text-sm text-destructive">
         <span>{greetingError}</span>
         <Button variant="outline" size="sm" onClick={() => setGreetingAttempt(attempt => attempt + 1)}>Retry welcome</Button>
@@ -146,6 +147,6 @@ export function AgentChat() {
         key={`${agent.id}:${userId}`}
         conversation={{ agent, issue: chat.data ?? null, ensureIssue, onReady }}
       />
-    </>
+    </NexusShell>
   );
 }
