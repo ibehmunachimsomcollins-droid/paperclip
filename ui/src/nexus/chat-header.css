@@ -1,11 +1,17 @@
-/* Nexus chat header — identity block (avatar + name) and actions row. */
+/* Nexus chat header — identity block (avatar + name) and actions row.
+   Doubles as the shell's top bar when an agent is present, so it is sticky
+   like the plain header it replaces. */
 .nexus-chat-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.6rem 1rem;
   border-bottom: 1px solid var(--nexus-border);
+  background: var(--nexus-bg);
 }
 
 .nexus-chat-header-identity {
