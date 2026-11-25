@@ -1,0 +1,43 @@
+/* Nexus chat header — identity block (avatar + name) and actions row.
+   Doubles as the shell's top bar when an agent is present, so it is sticky
+   like the plain header it replaces. */
+.nexus-chat-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--nexus-border);
+  background: var(--nexus-bg);
+}
+
+.nexus-chat-header-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.nexus-chat-header-avatar {
+  flex-shrink: 0;
+}
+
+.nexus-chat-header-name {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-size: 1rem;
+  color: var(--nexus-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nexus-chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
