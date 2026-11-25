@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Link, useLocation } from "@/lib/router";
 import { NexusModelSelector } from "./NexusModelSelector";
+import { NexusChatHeader } from "./NexusChatHeader";
 import type { Agent } from "@paperclipai/shared";
 
 const SIDEBAR_LINKS: Array<{ to: string; label: string }> = [
@@ -11,9 +12,10 @@ const SIDEBAR_LINKS: Array<{ to: string; label: string }> = [
 ];
 
 export interface NexusShellProps {
-  /** Bold title shown in the header, typically the agent name. */
+  /** Bold title shown in the header when no agent is provided. */
   title: string;
-  /** The agent driving this conversation; enables the model selector. */
+  /** The agent driving this conversation; swaps the plain title for the
+   * identity header (avatar + name + model selector). */
   agent?: Agent;
   /** Main chat area content. */
   children?: ReactNode;
@@ -32,8 +34,8 @@ function isLinkActive(pathname: string, to: string): boolean {
 
 /**
  * The Nexus app frame: full screen on mobile with a desktop sidebar at
- * >= 768px. The header carries the agent name and model selector, the main
- * area hosts the conversation (or any wrapped surface), and the optional
+ * >= 768px. The header carries the agent identity and model selector, the
+ * main area hosts the conversation (or any wrapped surface), and the optional
  * input bar stays pinned to the bottom.
  */
 export function NexusShell({ title, agent, children, input }: NexusShellProps) {
@@ -54,12 +56,13 @@ export function NexusShell({ title, agent, children, input }: NexusShellProps) {
         ))}
       </aside>
       <div className="nexus-shell-column">
-        <header className="nexus-header">
-          <h1 className="nexus-header-title">{title}</h1>
-          <div className="nexus-header-actions">
-            {agent ? <NexusModelSelector agent={agent} /> : null}
-          </div>
-        </header>
+        {agent ? (
+          <NexusChatHeader agent={agent} />
+        ) : (
+          <header className="nexus-header">
+            <h1 className="nexus-header-title">{title}</h1>
+          </header>
+        )}
         <main className="nexus-main">
           {children}
         </main>
