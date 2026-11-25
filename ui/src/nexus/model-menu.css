@@ -1,8 +1,5 @@
-/* Nexus — note items in the model menu (loading, error, empty states). */
-.nexus-model-menu-note {
-  padding: 0.5rem 0.6rem;
-  font-size: 0.8rem;
-  font-weight: 400;
-  color: var(--nexus-text-muted);
-  white-space: pre-line;
-}
+/* Nexus — note items in the model menu (loading, error, empty states).
+   Kept as a separate partial for clarity; tokens are inherited from .nexus-root. */
+
+/* Deprecated partial: superseded by the same rules in nexus.css. Retained so
+   existing imports keep working; safe to delete once nothing references it. */
