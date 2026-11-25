@@ -1,16 +1,16 @@
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { agentsApi } from "@/api/agents";
 import { adaptersApi } from "@/api/adapters";
 import { useCompany } from "@/context/CompanyContext";
 import { useToastActions } from "@/context/ToastContext";
 import { describeError } from "@/api/errors";
-import { useEffect, useRef, useState } from "react";
 import type { Agent } from "@paperclipai/shared";
 
 /**
  * Display metadata for the adapters Nexus offers in the model selector.
- * The adapter `type` is the stable identifier the backend expects on
- * `adapterType`; the label and color are purely presentation.
+ * The adapter `type` is the stable identifier the backend expects on the
+ * agent update payload's `adapterType` field; label and color are presentation.
  */
 export const NEXUS_ADAPTER_META: Record<string, { label: string; color: string }> = {
   "gemini-local": { label: "Gemini", color: "#1a73e8" },
@@ -33,9 +33,9 @@ export interface NexusModelSelectorProps {
 }
 
 /**
- * Pill-shaped model selector for the Nexus header. Lists enabled adapters from
- * the existing adapters endpoint and persists a selection through the existing
- * agent update endpoint.
+ * Pill-shaped model selector. Lists enabled adapters from the existing
+ * adapters endpoint and persists a selection through the existing agent
+ * update endpoint: `agentsApi.update(id, { adapterType }, companyId)`.
  */
 export function NexusModelSelector({ agent }: NexusModelSelectorProps) {
   const { selectedCompanyId } = useCompany();
@@ -52,6 +52,7 @@ export function NexusModelSelector({ agent }: NexusModelSelectorProps) {
   });
 
   const updateAgent = useMutation({
+    // agentsApi.update signature: (id, data, companyId?) — companyId third.
     mutationFn: (adapterType: string) =>
       agentsApi.update(agent.id, { adapterType }, agent.companyId),
     onSuccess: () => {
