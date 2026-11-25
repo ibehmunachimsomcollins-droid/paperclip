@@ -1,0 +1,17 @@
+.nexus-root {
+  flex-direction: column;
+}
+
+.nexus-shell-column {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .nexus-root {
+    flex-direction: row;
+  }
+}
