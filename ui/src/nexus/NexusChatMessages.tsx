@@ -37,7 +37,7 @@ export function NexusChatMessages({ messages }: NexusChatMessagesProps) {
 
   if (!messages.length) {
     return (
-      <div className="nexus-chat nexus-chat--empty" ref={scrollRef}>
+      <div className="nexus-chat" ref={scrollRef}>
         <div className="nexus-empty">
           <p className="nexus-empty-title">Nothing here yet.</p>
           <p className="nexus-empty-body">Say hello to get started.</p>
