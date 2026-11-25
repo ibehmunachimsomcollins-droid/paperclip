@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { agentsApi } from "@/api/agents";
-import { adaptersApi, type AdapterInfo } from "@/api/adapters";
+import { adaptersApi } from "@/api/adapters";
 import { useCompany } from "@/context/CompanyContext";
 import { useToastActions } from "@/context/ToastContext";
 import { describeError } from "@/api/errors";
@@ -86,7 +86,7 @@ export function NexusModelSelector({ agent }: NexusModelSelectorProps) {
   const enabledAdapters = (adapters.data ?? []).filter(adapter => !adapter.disabled);
 
   return (
-    <div className="nexus-model-selector" ref={rootRef}>
+    <div ref={rootRef}>
       <button
         type="button"
         className="nexus-model-pill"
@@ -99,9 +99,9 @@ export function NexusModelSelector({ agent }: NexusModelSelectorProps) {
       </button>
       {open && (
         <div className="nexus-model-menu" role="listbox" aria-label="Model">
-          {adapters.isPending && <div className="nexus-model-menu-item nexus-model-menu-item--note">Loading models…</div>}
+          {adapters.isPending && <div className="nexus-model-menu-note">Loading models…</div>}
           {adapters.isError && (
-            <div className="nexus-model-menu-item nexus-model-menu-item--note" role="alert">
+            <div className="nexus-model-menu-note" role="alert">
               {describeError(adapters.error).body}
             </div>
           )}
@@ -125,7 +125,7 @@ export function NexusModelSelector({ agent }: NexusModelSelectorProps) {
             );
           })}
           {!adapters.isPending && !adapters.isError && enabledAdapters.length === 0 && (
-            <div className="nexus-model-menu-item nexus-model-menu-item--note">No models available.</div>
+            <div className="nexus-model-menu-note">No models available.</div>
           )}
         </div>
       )}
