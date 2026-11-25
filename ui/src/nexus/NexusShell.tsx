@@ -17,19 +17,17 @@ export interface NexusShellProps {
   agent?: Agent;
   /** Main chat area content. */
   children?: ReactNode;
-  /** Bottom input bar, e.g. <NexusChatInput />. Omitted on mobile-only layouts. */
+  /** Bottom input bar, e.g. <NexusChatInput />. */
   input?: ReactNode;
 }
 
-function activeLink(pathname: string, to: string): boolean {
-  const base = to.split("/").filter(Boolean);
-  const path = pathname.split("/").filter(Boolean);
-  // Compare company-relative segments: skip a leading company prefix segment.
-  const relative = path.length > 1 && path[0] === path[0]?.toUpperCase() && path.length && base[0] && path.includes(base[0])
-    ? path.slice(path.indexOf(base[0]))
-    : path;
-  if (!relative.length) return false;
-  return base.every((segment, index) => relative[index]?.toLowerCase() === segment.toLowerCase());
+function isLinkActive(pathname: string, to: string): boolean {
+  // Compare the company-relative tail of the current path against the target
+  // route, tolerating the optional leading company-prefix segment.
+  const target = to.split("/").filter(Boolean);
+  const segments = pathname.split("/").filter(Boolean);
+  const start = segments.length > target.length ? segments.length - target.length : 0;
+  return target.every((segment, index) => segments[start + index]?.toLowerCase() === segment.toLowerCase());
 }
 
 /**
@@ -49,7 +47,7 @@ export function NexusShell({ title, agent, children, input }: NexusShellProps) {
           <Link
             key={link.to}
             to={link.to}
-            className={`nexus-sidebar-item${activeLink(pathname, link.to) ? " nexus-sidebar-item--active" : ""}`}
+            className={`nexus-sidebar-item${isLinkActive(pathname, link.to) ? " nexus-sidebar-item--active" : ""}`}
           >
             {link.label}
           </Link>
