@@ -1,0 +1,8 @@
+/* Nexus — note items in the model menu (loading, error, empty states). */
+.nexus-model-menu-note {
+  padding: 0.5rem 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--nexus-text-muted);
+  white-space: pre-line;
+}
