@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { agentsApi } from "@/api/agents";
 import { adaptersApi } from "@/api/adapters";
 import { useCompany } from "@/context/CompanyContext";
 import { useToastActions } from "@/context/ToastContext";
 import { describeError } from "@/api/errors";
+import { useEffect, useRef, useState } from "react";
 import type { Agent } from "@paperclipai/shared";
 
 /**
