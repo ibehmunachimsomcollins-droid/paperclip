@@ -1,8 +1,8 @@
-# Nexus — Railway deployment (Node.js only, Rust runner disabled)
+# Nexus — Railway deployment
 FROM node:24-slim
 
 RUN apt-get update && apt-get install -y \
-    python3 make g++ git \
+    python3 make g++ git curl \
     && rm -rf /var/lib/apt/lists/*
 
 RUN npm install -g pnpm@9
@@ -11,18 +11,14 @@ WORKDIR /app
 
 COPY . .
 
-# Install deps but skip all prepare/postinstall scripts
+# Install all dependencies including devDeps (needed for build)
 RUN pnpm install --frozen-lockfile --ignore-scripts
 
-# Build shared packages first
-RUN pnpm --filter @paperclipai/shared build || true
-RUN pnpm --filter @paperclipai/db build || true
+# Use turbo to build only the server and its deps (skips runner)
+RUN pnpm exec turbo run build --filter=@paperclipai/server --no-daemon 2>&1 || true
 
-# Build UI
-RUN pnpm --filter @paperclipai/ui build || true
-
-# Build server TypeScript only — skip the runner-vendor script
-RUN cd server && pnpm exec tsc -p tsconfig.json --noEmit false || true
+# Verify the output exists
+RUN ls server/dist/index.js || (echo "Build failed — dist not found" && exit 1)
 
 EXPOSE 3100
 
