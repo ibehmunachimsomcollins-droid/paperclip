@@ -1,23 +1,15 @@
 # Nexus — Railway deployment (Node.js only)
-FROM node:20-slim AS base
+FROM node:20-slim
 
 RUN apt-get update && apt-get install -y \
-    python3 \
-    make \
-    g++ \
-    git \
+    python3 make g++ git \
     && rm -rf /var/lib/apt/lists/*
 
 RUN npm install -g pnpm@9
 
 WORKDIR /app
 
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY tsconfig.base.json tsconfig.json turbo.json ./
-COPY packages/shared ./packages/shared
-COPY packages/editor ./packages/editor  
-COPY server ./server
-COPY ui ./ui
+COPY . .
 
 RUN pnpm install --frozen-lockfile --ignore-scripts
 
