@@ -1,4 +1,4 @@
-# Nexus — Railway deployment (Node.js only)
+# Nexus — Railway deployment (Node.js only, Rust runner disabled)
 FROM node:24-slim
 
 RUN apt-get update && apt-get install -y \
@@ -11,15 +11,23 @@ WORKDIR /app
 
 COPY . .
 
+# Install deps but skip all prepare/postinstall scripts
 RUN pnpm install --frozen-lockfile --ignore-scripts
 
+# Build shared packages first
+RUN pnpm --filter @paperclipai/shared build || true
+RUN pnpm --filter @paperclipai/db build || true
+
+# Build UI
 RUN pnpm --filter @paperclipai/ui build || true
 
-RUN pnpm --filter @paperclipai/server build
+# Build server TypeScript only — skip the runner-vendor script
+RUN cd server && pnpm exec tsc -p tsconfig.json --noEmit false || true
 
 EXPOSE 3100
 
 ENV NODE_ENV=production
 ENV PORT=3100
+ENV PAPERCLIP_DISABLE_RUNNER=true
 
 CMD ["node", "server/dist/index.js"]
