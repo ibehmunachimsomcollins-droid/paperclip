@@ -1,33 +1,125 @@
-# Nexus — Railway deployment (Node.js only, Rust runner disabled)
-FROM node:24-slim
+# ── Nexus / Railway build ──────────────────────────────────────────────────
+# Node.js server + React UI + the Rust Paperclip runner daemon.
+#
+# The server build vendors the compiled Runner into dist/vendor (see
+# server/package.json `build` -> prepare:runner-vendor). The Runner's build
+# compiles the Rust daemon (paperclip-runnerd) with cargo, so this image needs
+# the Rust toolchain pinned by packages/paperclip-runner/rust-toolchain.toml.
+# Skipping it is not supported: the vendored dist is required at runtime and
+# the server build fails without it.
+#
+# The base is the same Node image family the root Dockerfile uses
+# (node:24-trixie-slim). Debian slim images ship without a C toolchain, so
+# gcc (build-essential) is installed for cargo's linker plus the other native
+# module build prerequisites.
+#
+# syntax=docker/dockerfile:1.20
+FROM node:24-trixie-slim AS base
 
-RUN apt-get update && apt-get install -y \
-    python3 make g++ git \
-    && rm -rf /var/lib/apt/lists/*
+ARG RUSTUP_VERSION=1.29.0
 
-RUN npm install -g pnpm@9
+# Toolchain layer: apt packages first, then rustup pinned to the Runner's
+# channel. corepack provides the pnpm version pinned in package.json's
+# packageManager field (pnpm@9.15.4).
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    build-essential \
+    curl \
+    git \
+    python3 \
+    tini \
+  && rm -rf /var/lib/apt/lists/* \
+  && corepack enable
+
+ENV RUSTUP_HOME=/usr/local/rustup \
+    CARGO_HOME=/usr/local/cargo \
+    PATH=/usr/local/cargo/bin:$PATH \
+    # cargo strips the release binary itself; the Runner's build stamp records
+    # the size of every file under dist, so the binary must not change after
+    # the build (same setting as the root Dockerfile).
+    CARGO_PROFILE_RELEASE_STRIP=symbols
+
+# Install the toolchain that packages/paperclip-runner/rust-toolchain.toml
+# pins. rustup-init comes from rust-lang.org; the channel file governs the
+# exact compiler version.
+RUN set -eux; \
+    arch="$(dpkg --print-architecture)"; \
+    case "$arch" in \
+      amd64) rustTarget="x86_64-unknown-linux-gnu" ;; \
+      arm64) rustTarget="aarch64-unknown-linux-gnu" ;; \
+      *) echo "unsupported architecture: $arch" >&2; exit 1 ;; \
+    esac; \
+    curl -fsSLo /tmp/rustup-init "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${rustTarget}/rustup-init"; \
+    chmod +x /tmp/rustup-init; \
+    /tmp/rustup-init -y --no-modify-path --profile minimal --default-toolchain none; \
+    rm /tmp/rustup-init
 
 WORKDIR /app
-
 COPY . .
 
-# Install deps but skip all prepare/postinstall scripts
-RUN pnpm install --frozen-lockfile --ignore-scripts
+# Install with a frozen lockfile. The Runner's install scripts (copilot
+# assets, plugin-sdk link) are part of the real build; --ignore-scripts is
+# not used, matching the root Dockerfile's deps stage.
+RUN pnpm install --frozen-lockfile
 
-# Build shared packages first
-RUN pnpm --filter @paperclipai/shared build || true
-RUN pnpm --filter @paperclipai/db build || true
+# Install the exact Rust toolchain the Runner pins, from its own channel file.
+RUN cd packages/paperclip-runner && rustup toolchain install && rustc --version && cargo --version
 
-# Build UI
-RUN pnpm --filter @paperclipai/ui build || true
+# ── Build: UI ──────────────────────────────────────────────────────────────
+# The server serves the UI from server/ui-dist via prepare:ui-dist
+# (PAPERCLIP_RELEASE_REUSE_UI_DIST=1 reuses ui/dist when it already exists).
+RUN pnpm --filter @paperclipai/ui build
 
-# Build server TypeScript only — skip the runner-vendor script
-RUN cd server && pnpm exec tsc -p tsconfig.json --noEmit false || true
+# ── Build: plugin SDK ───────────────────────────────────────────────────────
+RUN pnpm --filter @paperclipai/plugin-sdk build
 
-EXPOSE 3100
+# ── Build: server (includes the Rust runner daemon) ────────────────────────
+# The server's `build` script runs prepare:runner-vendor, which runs the
+# Runner's full build, compiles paperclip-runnerd with cargo, and vendors the
+# compiled dist into server/dist/vendor/paperclip-runner. This is the step
+# that previously failed with `cargo: not found`; the toolchain layer above
+# fixes it.
+RUN pnpm --filter @paperclipai/server build
 
-ENV NODE_ENV=production
-ENV PORT=3100
-ENV PAPERCLIP_DISABLE_RUNNER=true
+# Fail the image build if the real outputs are missing rather than shipping a
+# silently broken image (the old file's `|| true` masks failures).
+RUN test -f server/dist/index.js || { echo "ERROR: server build output missing" >&2; exit 1; }
+RUN test -f packages/paperclip-runner/dist/bin/paperclip-runnerd || { echo "ERROR: runner daemon binary missing" >&2; exit 1; }
 
-CMD ["node", "server/dist/index.js"]
+# ── Build: bundled server runtime ───────────────────────────────────────────
+# Matches the root Dockerfile's build stage: the production CMD runs the
+# bundled runtime, not raw dist.
+RUN pnpm --filter @paperclipai/server build:runtime \
+  && test -f server/dist-runtime/index.mjs || { echo "ERROR: server runtime bundle missing" >&2; exit 1; }
+
+# ── Production image ────────────────────────────────────────────────────────
+FROM node:24-trixie-slim AS production
+ENV NODE_ENV=production \
+    HOME=/paperclip \
+    HOST=0.0.0.0 \
+    PORT=3100 \
+    SERVE_UI=true \
+    PAPERCLIP_HOME=/paperclip \
+    PAPERCLIP_INSTANCE_ID=default
+WORKDIR /app
+
+RUN corepack enable && apt-get update \
+  && apt-get install -y --no-install-recommends ca-certificates tini \
+  && rm -rf /var/lib/apt/lists/*
+
+COPY --from=base /app/server/dist ./server/dist
+COPY --from=base /app/server/dist-runtime ./server/dist-runtime
+COPY --from=base /app/server/node_modules ./server/node_modules
+COPY --from=base /app/server/package.json ./server/package.json
+COPY --from=base /app/server/ui-dist ./server/ui-dist
+COPY --from=base /app/node_modules ./node_modules
+COPY --from=base /app/packages ./packages
+COPY --from=base /app/package.json ./package.json
+COPY --from=base /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY --from=base /app/scripts/docker-entrypoint.sh ./scripts/
+
+# tini as PID 1 (agent runs leave orphaned descendants that pile up as zombies
+# under a bare node PID 1; mirrors the root Dockerfile).
+ENTRYPOINT ["/usr/bin/tini", "-s", "--"]
+CMD ["node", "server/dist-runtime/index.mjs"]
