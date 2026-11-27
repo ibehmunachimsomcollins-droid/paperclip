@@ -1,24 +1,30 @@
-# Nexus — Railway deployment
+# Nexus — Railway deployment (direct tsc, no cargo)
 FROM node:24-slim
 
 RUN apt-get update && apt-get install -y \
-    python3 make g++ git curl \
+    python3 make g++ git \
     && rm -rf /var/lib/apt/lists/*
 
-RUN npm install -g pnpm@9
+RUN npm install -g pnpm@9 typescript
 
 WORKDIR /app
 
 COPY . .
 
-# Install all dependencies including devDeps (needed for build)
+# Install deps, skip all lifecycle scripts (avoids cargo calls)
 RUN pnpm install --frozen-lockfile --ignore-scripts
 
-# Use turbo to build only the server and its deps (skips runner)
-RUN pnpm exec turbo run build --filter=@paperclipai/server --no-daemon 2>&1 || true
+# Build shared package (pure TS, no Rust)
+RUN cd packages/shared && npx tsc -p tsconfig.json || true
 
-# Verify the output exists
-RUN ls server/dist/index.js || (echo "Build failed — dist not found" && exit 1)
+# Build server directly with tsc — bypasses pnpm build scripts entirely
+RUN cd server && npx tsc -p tsconfig.json
+
+# Build UI
+RUN pnpm --filter @paperclipai/ui build || true
+
+# Confirm output exists
+RUN ls server/dist/index.js
 
 EXPOSE 3100
 
