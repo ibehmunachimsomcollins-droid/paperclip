@@ -1,35 +1,29 @@
-# Nexus — Railway deployment (direct tsc, no cargo)
+# Nexus — Railway deployment (tsx runtime, no build step, no cargo)
 FROM node:24-slim
 
 RUN apt-get update && apt-get install -y \
     python3 make g++ git \
     && rm -rf /var/lib/apt/lists/*
 
-RUN npm install -g pnpm@9 typescript
+RUN npm install -g pnpm@9
 
 WORKDIR /app
 
 COPY . .
 
-# Install deps, skip all lifecycle scripts (avoids cargo calls)
+# Install deps, skip postinstall scripts (avoids cargo/copilot calls)
 RUN pnpm install --frozen-lockfile --ignore-scripts
 
-# Build shared package (pure TS, no Rust)
-RUN cd packages/shared && npx tsc -p tsconfig.json || true
-
-# Build server directly with tsc — bypasses pnpm build scripts entirely
-RUN cd server && npx tsc -p tsconfig.json
-
-# Build UI
-RUN pnpm --filter @paperclipai/ui build || true
-
-# Confirm output exists
-RUN ls server/dist/index.js
+# Install tsx globally to run TypeScript directly
+RUN npm install -g tsx
 
 EXPOSE 3100
 
 ENV NODE_ENV=production
 ENV PORT=3100
 ENV PAPERCLIP_DISABLE_RUNNER=true
+ENV PAPERCLIP_MIGRATION_AUTO_APPLY=true
+ENV PAPERCLIP_MIGRATION_PROMPT=never
 
-CMD ["node", "server/dist/index.js"]
+# Run server directly with tsx — no build step needed
+CMD ["tsx", "server/src/index.ts"]
