@@ -54,4 +54,23 @@ console.log("Render startup: created persistent Paperclip configuration.");
 NODE
 fi
 
+# One-time first-admin bootstrap. Opt-in via PAPERCLIP_BOOTSTRAP_ADMIN=1 so
+# ordinary boots stay fast. Runs BEFORE the server so the CLI never competes
+# with the server for the free instance's 512MB of RAM; the server then starts
+# alone afterwards. With external PostgreSQL the CLI inserts the invite
+# directly, so it does not need the server to be up. Once an instance admin
+# exists the command refuses, so leaving the env var set is harmless — but
+# unset it after claiming to keep boots fast.
+if [ "${PAPERCLIP_BOOTSTRAP_ADMIN:-0}" = "1" ]; then
+  publicUrl="${PAPERCLIP_AUTH_PUBLIC_BASE_URL:-${PAPERCLIP_PUBLIC_URL:-}}"
+  if [ -n "$publicUrl" ]; then
+    echo "Render startup: minting first-admin bootstrap invite (PAPERCLIP_BOOTSTRAP_ADMIN=1)..."
+    npx --yes paperclipai@0.3.1 auth bootstrap-ceo \
+      -c "$config_file" \
+      --base-url "$publicUrl" \
+      --expires-hours 168 \
+    || echo "Render startup: bootstrap-ceo did not complete (an instance admin may already exist)."
+  fi
+fi
+
 exec node server/dist-runtime/index.mjs
