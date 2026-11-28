@@ -54,20 +54,26 @@ console.log("Render startup: created persistent Paperclip configuration.");
 NODE
 fi
 
-# Start the server first so the container is healthy regardless of what the
-# bootstrap step below does; the bootstrap runs in the background.
+# Start the server. It must bind PORT before Render's health check window
+# closes, so nothing heavy (no npx downloads) may run in parallel with startup.
 node server/dist-runtime/index.mjs &
 server_pid=$!
 trap 'kill -TERM "$server_pid" 2>/dev/null' TERM INT
 
-# Mint the first-admin (bootstrap CEO) invite on boot. With external PostgreSQL
-# the invite can be inserted directly, so this replaces running
-# `paperclipai auth bootstrap-ceo` on a host we do not have. Safe on every boot:
-# once an instance admin exists the command refuses, and otherwise it rotates
-# the outstanding one-time invite (a fresh URL is printed to the service logs).
 publicUrl="${PAPERCLIP_AUTH_PUBLIC_BASE_URL:-${PAPERCLIP_PUBLIC_URL:-}}"
 if [ -n "$publicUrl" ]; then
   (
+    # Wait for the server to accept connections on PORT first. This keeps the
+    # 512MB free instance from being starved during Render's port scan.
+    i=0
+    until node -e "fetch('http://127.0.0.1:' + (process.env.PORT || 3100) + '/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))" 2>/dev/null; do
+      i=$((i + 1))
+      [ "$i" -ge 120 ] && { echo "Render startup: server not healthy after 120s; skipping bootstrap invite."; exit 0; }
+      sleep 2
+    done
+    # Mint the first-admin (bootstrap CEO) invite and print the URL to logs.
+    # Once an instance admin exists the command refuses, so this is safe on
+    # every boot; otherwise it rotates the outstanding one-time invite.
     npx --yes paperclipai@0.3.1 auth bootstrap-ceo \
       -c "$config_file" \
       --base-url "$publicUrl" \
