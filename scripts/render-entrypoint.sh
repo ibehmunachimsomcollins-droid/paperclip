@@ -54,4 +54,26 @@ console.log("Render startup: created persistent Paperclip configuration.");
 NODE
 fi
 
-exec node server/dist-runtime/index.mjs
+# Start the server first so the container is healthy regardless of what the
+# bootstrap step below does; the bootstrap runs in the background.
+node server/dist-runtime/index.mjs &
+server_pid=$!
+trap 'kill -TERM "$server_pid" 2>/dev/null' TERM INT
+
+# Mint the first-admin (bootstrap CEO) invite on boot. With external PostgreSQL
+# the invite can be inserted directly, so this replaces running
+# `paperclipai auth bootstrap-ceo` on a host we do not have. Safe on every boot:
+# once an instance admin exists the command refuses, and otherwise it rotates
+# the outstanding one-time invite (a fresh URL is printed to the service logs).
+publicUrl="${PAPERCLIP_AUTH_PUBLIC_BASE_URL:-${PAPERCLIP_PUBLIC_URL:-}}"
+if [ -n "$publicUrl" ]; then
+  (
+    npx --yes paperclipai@0.3.1 auth bootstrap-ceo \
+      -c "$config_file" \
+      --base-url "$publicUrl" \
+      --expires-hours 168 \
+    || echo "Render startup: bootstrap-ceo skipped or failed (an instance admin may already exist)."
+  ) &
+fi
+
+wait "$server_pid"
