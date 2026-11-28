@@ -1,15 +1,16 @@
 #!/bin/sh
 set -eu
 
-# Render's persistent disk is mounted at /paperclip. Create the initial config
-# once so Paperclip selects external PostgreSQL instead of embedded Postgres.
+# Render's persistent disk is mounted at /paperclip. Regenerate the config on
+# every boot (not just the first) from the environment so a DATABASE_URL change
+# takes effect on the next restart — the config is fully derived from env vars,
+# so this is idempotent.
 export PAPERCLIP_HOME="${PAPERCLIP_HOME:-/paperclip}"
 config_dir="$PAPERCLIP_HOME/instances/default"
 config_file="$config_dir/config.json"
 mkdir -p "$config_dir"
 
-if [ ! -f "$config_file" ]; then
-  node --input-type=module <<'NODE'
+node --input-type=module <<'NODE'
 import fs from "node:fs";
 import path from "node:path";
 
@@ -49,10 +50,9 @@ const config = {
   storage: { provider: "local_disk", localDisk: { baseDir: path.join(home, "instances", "default", "data", "storage") }, s3: { bucket: "paperclip", region: "us-east-1", prefix: "", forcePathStyle: false } },
   secrets: { provider: "local_encrypted", strictMode: true, localEncrypted: { keyFilePath: path.join(home, "instances", "default", "secrets", "master.key") } }
 };
-fs.writeFileSync(configPath, JSON.stringify(config, null, 2), { mode: 0o600, flag: "wx" });
-console.log("Render startup: created persistent Paperclip configuration.");
+fs.writeFileSync(configPath, JSON.stringify(config, null, 2), { mode: 0o600 });
+console.log("Render startup: wrote persistent Paperclip configuration from environment.");
 NODE
-fi
 
 # One-time first-admin (bootstrap CEO) invite, opt-in via PAPERCLIP_BOOTSTRAP_ADMIN=1.
 # Mints the invite row directly in PostgreSQL with a small Node process that uses
