@@ -1,0 +1,5 @@
+/* Nexus — note items in the model menu (loading, error, empty states).
+   Kept as a separate partial for clarity; tokens are inherited from .nexus-root. */
+
+/* Deprecated partial: superseded by the same rules in nexus.css. Retained so
+   existing imports keep working; safe to delete once nothing references it. */

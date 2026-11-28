@@ -6,6 +6,7 @@ import * as ReactDOM from "react-dom";
 import { BrowserRouter } from "@/lib/router";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { App } from "./App";
+import { NexusMobileNav } from "./nexus";
 import { AppErrorBoundary } from "./components/AppErrorBoundary";
 import { SentryGate } from "./components/SentryGate";
 import { ProductAnalyticsGate } from "./components/ProductAnalyticsGate";
@@ -39,6 +40,8 @@ import { adoptHardLoadChatBootstrap } from "./lib/issue-chat-bootstrap";
 import { hasPendingWrites, subscribePendingWrites } from "./lib/reload-safety";
 import "@mdxeditor/editor/style.css";
 import "./index.css";
+import "./nexus/nexus.css";
+import "./nexus/chat-header.css";
 
 initPluginBridge(React, ReactDOM);
 
@@ -149,7 +152,12 @@ getOrCreatePaperclipReactRoot(window, rootElement).render(
                             <PluginLauncherProvider>
                               <DialogProvider>
                                 <TaskCancellationProvider>
-                                <DesignSandboxProvider><CompanyVoiceCalls><CompanyLinkPreviews><App /></CompanyLinkPreviews></CompanyVoiceCalls></DesignSandboxProvider>
+                                <DesignSandboxProvider><CompanyVoiceCalls><CompanyLinkPreviews>
+                                  {/* Nexus mobile nav mounts beside the app surface so it stays
+                                      reachable on every route; it is fixed and mobile-only. */}
+                                  <App />
+                                  <NexusMobileNav />
+                                </CompanyLinkPreviews></CompanyVoiceCalls></DesignSandboxProvider>
                                 </TaskCancellationProvider>
                               </DialogProvider>
                             </PluginLauncherProvider>
