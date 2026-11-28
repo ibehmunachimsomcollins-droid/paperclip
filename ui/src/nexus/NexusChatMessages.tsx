@@ -37,26 +37,29 @@ export function NexusChatMessages({ messages }: NexusChatMessagesProps) {
 
   if (!messages.length) {
     return (
-      <div className="nexus-empty">
-        <p className="nexus-empty-title">Start a conversation</p>
-        <p className="nexus-empty-hint">Send a message to begin working with this agent.</p>
+      <div className="nexus-chat" ref={scrollRef}>
+        <div className="nexus-empty">
+          <p className="nexus-empty-title">Nothing here yet.</p>
+          <p className="nexus-empty-body">Say hello to get started.</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="nexus-messages" ref={scrollRef}>
-      {messages.map(msg => (
+    <div className="nexus-chat" ref={scrollRef}>
+      {messages.map(message => (
         <div
-          key={msg.id}
-          className={`nexus-msg nexus-msg--${msg.author}${msg.streaming ? " nexus-msg--streaming" : ""}`}
+          key={message.id}
+          className={[
+            "nexus-message",
+            message.author === "user" ? "nexus-message--user" : "nexus-message--agent",
+            message.streaming ? "nexus-message--streaming" : "",
+          ].filter(Boolean).join(" ")}
         >
-          <div className="nexus-msg-body">
-            {msg.text}
-            {msg.streaming ? <span className="nexus-caret" aria-hidden /> : null}
-          </div>
-          <time className="nexus-msg-time" dateTime={msg.createdAt}>
-            {formatTime(msg.createdAt)}
+          <div className="nexus-message-body">{message.text}</div>
+          <time className="nexus-message-time" dateTime={message.createdAt}>
+            {formatTime(message.createdAt)}
           </time>
         </div>
       ))}
